@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:formydisaster/screens/test_screen.dart'; //더미 테스트를 위해
+import 'package:formydisaster/screens/mypage_screen.dart'; //mypage를 위한 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,7 +39,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
      //원래 코드고 테스트를 위해 임시로 주석 처리 home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      home: const TestScreen(),
+      //더미 데이터 테스트를 위한 home: const TestScreen(),
+      home:MypageScreen(),
     );
   }
 }
