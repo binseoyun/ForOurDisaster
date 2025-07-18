@@ -6,6 +6,7 @@ import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/mypage_screen.dart';
+import 'screens/eiditprofile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,14 +26,18 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Pretendard',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
       ),
-      initialRoute: '/',
-      routes: {
+      home: ProfileScreen()
+      /*initialRoute: '/editprofile',
+     routes: {
         '/': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
         '/home': (context) => const HomeScreen(),
         '/mypage': (context) => const MypageScreen(),
+         '/editprofile': (context) => const ProfileScreen(),
       },
+      */
     );
+  
   }
 }
