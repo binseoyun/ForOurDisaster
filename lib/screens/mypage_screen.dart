@@ -95,25 +95,35 @@ class EmergencyHomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("빈서윤"),
-        actions: const [Padding(padding: EdgeInsets.all(12), child: Icon(Icons.settings))],
+        actions: const [
+          Padding(padding: EdgeInsets.all(12), child: Icon(Icons.settings)),
+        ],
       ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            const Text("비밀번호 수정", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const Text(
+              "비밀번호 수정",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 8),
             TextField(
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
                 hintText: '010-0000-1111',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
             const SizedBox(height: 24),
             Row(
               children: const [
-                Text("나의 긴급 연락처", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                Text(
+                  "나의 긴급 연락처",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
                 SizedBox(width: 6),
                 Icon(Icons.person_add_alt_1_outlined, size: 20),
               ],
@@ -123,7 +133,9 @@ class EmergencyHomePage extends StatelessWidget {
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
                 hintText: '010-0000-1111',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
             const SizedBox(height: 32),
@@ -163,12 +175,18 @@ class EmergencyHomePage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 36),
-            const Text("나의 긴급 전화", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              "나의 긴급 전화",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
             GestureDetector(
               onTap: () => _call("01000001111"),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black12),
                   borderRadius: BorderRadius.circular(12),
