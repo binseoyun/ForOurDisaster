@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:formydisaster/screens/test_screen.dart'; //더미 테스트를 위해
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -30,7 +37,8 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+     //원래 코드고 테스트를 위해 임시로 주석 처리 home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const TestScreen(),
     );
   }
 }
