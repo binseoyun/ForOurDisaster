@@ -56,10 +56,16 @@ class _ProfileScreenState extends State<ProfileScreen> { //상태 클래스, 이
   Widget build(BuildContext context) {
     return Scaffold(
       //상단 앱바 부분
-      appBar: AppBar(
-        title: const Text("프로필", style: TextStyle(fontWeight: FontWeight.bold)),
-        leading: const BackButton(), //왼쪽 상단의 <- 아이콘을 의미
-      ),
+     appBar: AppBar(
+     title: const Text("프로필", style: TextStyle(fontWeight: FontWeight.bold)),
+     leading: IconButton(
+     icon: const Icon(Icons.arrow_back),
+    onPressed: () {
+      Navigator.pushReplacementNamed(context, '/mypage'); //현재 화면을 제거하고 mypage로 교체 이동
+    },
+  ),
+),
+
       //body 전체 입력 폼
       body: Padding(
         padding: const EdgeInsets.all(20), //모든 요소에 패딩을 줘서 여백을 확보
