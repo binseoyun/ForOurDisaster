@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 
+//현재 내 위치 기반으로는 뜨게 가능
+//1.대피소 위치 api를 받아서 위도와 경도를 받아서 firestore에 저장 후 가져오기
+//2.geolocator 패키지의 Geolocator.distanceBetween() 매서드를 통해 현재 위치와 거리 계산
+//3.가까운 대피소만 필터링
+//4.지도에 마커로 표시
+
 class ShelterMapScreen extends StatefulWidget {
   const ShelterMapScreen({super.key});
 
