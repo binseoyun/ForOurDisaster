@@ -10,6 +10,7 @@ import 'screens/mypage_screen.dart';
 import 'screens/editprofile_screen.dart';
 import 'screens/call_screen.dart';
 import 'screens/map_screen.dart';
+import 'screens/menual_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,9 +31,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
       ),
 
-      //home: const ShelterMapScreen(),
+      home: const DisasterGuideScreen(),
       //debugShowCheckedModeBanner: false,
 
+/*
 
       // Firebase 로그인 상태에 따라 초기 화면 분기
       home: StreamBuilder<User?>(
@@ -81,7 +83,8 @@ class MyApp extends StatelessWidget {
       //   '/home': (context) => const HomeScreen(),
       //   '/mypage': (context) => const MypageScreen(),
       //   '/editprofile': (context) => const ProfileScreen(),
-      //},
+      //}, */
     );
+    
   }
 }
