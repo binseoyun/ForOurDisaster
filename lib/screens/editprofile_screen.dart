@@ -3,6 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart'; //나중에 firestore 만
 import 'package:firebase_auth/firebase_auth.dart'; //현재 로그인된 사용자의 uid를 불러와야 함
 
 
+//DropdownButton의 value가 메뉴 항목 중 정확히 하나와 일치하지 않아서 문제 발생
+//value 값이 실제로 DropdownMenuItem 리스트에 존재하는 지 중복은 없는지 확인
+
 
 class ProfileScreen extends StatefulWidget { //프로필 화면을 구성하는 StatefulWidget
   const ProfileScreen({super.key});

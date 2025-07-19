@@ -1,4 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+//사용자가 이름,이메일,비밀번호를 입력하고 FirebaseAuth로 회원가입 시 자동으로 id가 생성=> uid를 키로 하여 Firestore에 users 컬렉션에 문서 생성
+
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -99,10 +104,57 @@ class _SignupScreenState extends State<SignupScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     //TODO: 회원가입 로직
-                  },
-                  style: ElevatedButton.styleFrom(
+                    final name=_nameController.text.trim();
+                    final email=_emailController.text.trim();
+                    final password=_passwordController.text.trim();
+                    
+                    //Firebase Authentication에 회원가입
+                    //Firestore에 users 컬렉션에 문서 추가(uid 기반)
+                    //성공하면 => 로그인 화면 이동
+
+                   //아직 입력이 안되어 있다면
+                    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+                       ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("모든 항목을 입력해주세요.")),
+                       );
+                      return;
+                      }
+                      
+                try {
+                // 1. Firebase Authentication에 회원가입
+    
+                     final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                    email: email,
+                    password: password,
+                  );
+
+    // 2. Firestore에 사용자 문서 생성
+    
+    await FirebaseFirestore.instance.collection('users').doc(credential.user!.uid).set({
+      'name': name,
+      'email': email,
+      'country': '', // 기본 값
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    // 3. 로그인 화면으로 이동
+    Navigator.pushReplacementNamed(context, '/login');
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("회원가입 실패: $e")),
+    );
+  }
+
+
+     
+
+
+
+                   
+  },
+                    style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4B6045),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),

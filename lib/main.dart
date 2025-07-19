@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -27,18 +28,28 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Pretendard',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
       ),
-      home: CallScreen(),
-      /*initialRoute: '/editprofile',
-     routes: {
-        '/': (context) => const SplashScreen(),
+      // Firebase 로그인 상태에 따라 초기 화면 분기
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          //if (snapshot.hasData) {
+            // 로그인된 상태라면 editprofile_screen(ProfileScreen)으로 이동
+            //return const ProfileScreen();
+          //}
+          // 로그인 안된 경우 → 로그인 화면
+          return const LoginScreen();
+        },
+      ),
+      routes: {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
-        '/home': (context) => const HomeScreen(),
-        '/mypage': (context) => const MypageScreen(),
-         '/editprofile': (context) => const ProfileScreen(),
+        '/editprofile': (context) => const ProfileScreen(),
       },
-      */
     );
-  
   }
 }
