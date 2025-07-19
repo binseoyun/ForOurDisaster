@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'screens/signup_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/mypage_screen.dart';
 import 'screens/editprofile_screen.dart';
@@ -35,18 +37,21 @@ class MyApp extends StatelessWidget {
             );
           }
           //if (snapshot.hasData) {
-            // 로그인된 상태라면 editprofile_screen(ProfileScreen)으로 이동
-            //return const ProfileScreen();
+          // 로그인된 상태라면 editprofile_screen(ProfileScreen)으로 이동
+          //return const ProfileScreen();
           //}
           // 로그인 안된 경우 → 로그인 화면
           return const LoginScreen();
         },
       ),
-      routes: {
-        '/login': (context) => const LoginScreen(),
-        '/signup': (context) => const SignupScreen(),
-        '/editprofile': (context) => const ProfileScreen(),
-      },
+      // routes: {
+      //   '/': (context) => const SplashScreen(),
+      //   '/login': (context) => const LoginScreen(),
+      //   '/signup': (context) => const SignupScreen(),
+      //   '/home': (context) => const HomeScreen(),
+      //   '/mypage': (context) => const MypageScreen(),
+      //   '/editprofile': (context) => const ProfileScreen(),
+      //},
     );
   }
 }
