@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
-import 'login_screen.dart';
-import '../services/auth_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
+//사용자가 이름,이메일,비밀번호를 입력하고 FirebaseAuth로 회원가입 시 자동으로 id가 생성=> uid를 키로 하여 Firestore에 users 컬렉션에 문서 생성
+
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -122,72 +124,56 @@ class _SignupScreenState extends State<SignupScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () async {
-                    final name = _nameController.text.trim();
-                    final email = _emailController.text.trim();
-                    final password = _passwordController.text.trim();
+                    //TODO: 회원가입 로직
+                    final name=_nameController.text.trim();
+                    final email=_emailController.text.trim();
+                    final password=_passwordController.text.trim();
+                    
+                    //Firebase Authentication에 회원가입
+                    //Firestore에 users 컬렉션에 문서 추가(uid 기반)
+                    //성공하면 => 로그인 화면 이동
 
+                   //아직 입력이 안되어 있다면
                     if (name.isEmpty || email.isEmpty || password.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('모든 항목을을 채워주세요.')),
-                      );
+                       ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("모든 항목을 입력해주세요.")),
+                       );
                       return;
-                    }
-
-                    if (!isValidEmail(email)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('이메일 형식이 올바르지 않습니다.')),
-                      );
-                      return;
-                    }
-
-                    try {
-                      //회원가입
-                      await authService.value.signUp(
-                        email: email,
-                        password: password,
-                      );
-
-                      //사용자 이름 설정
-                      await authService.value.updateUsername(username: name);
-
-                      //성공 메세지
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('회원가입이 완료되었습니다.')),
-                      );
-
-                      //로그인 화면으로 이동
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                      );
-                    } on FirebaseAuthException catch (e) {
-                      print('FirebaseAuthException: ${e.code}, ${e.message}');
-                      String message;
-                      switch (e.code) {
-                        case 'invalid-email':
-                          message = '유효하지 않은 이메일 형식입니다다.';
-                          break;
-                        case 'email-already-in-use':
-                          message = '이미 사용 중인 이메일입니다.';
-                          break;
-                        case 'weak-password':
-                          message = '비밀번호는 6자 이상이어야 합니다.';
-                          break;
-                        default:
-                          message = '회원가입 중 오류가 발생했습니다: ${e.code})';
                       }
+                      
+                try {
+                // 1. Firebase Authentication에 회원가입
+    
+                     final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                    email: email,
+                    password: password,
+                  );
 
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text(message)));
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('예기지 못한 오류가 발생했습니다다: $e')),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
+    // 2. Firestore에 사용자 문서 생성
+    
+    await FirebaseFirestore.instance.collection('users').doc(credential.user!.uid).set({
+      'name': name,
+      'email': email,
+      'country': '', // 기본 값
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    // 3. 로그인 화면으로 이동
+    Navigator.pushReplacementNamed(context, '/login');
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("회원가입 실패: $e")),
+    );
+  }
+
+
+     
+
+
+
+                   
+  },
+                    style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4B6045),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
