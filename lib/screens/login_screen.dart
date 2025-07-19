@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 //로그인 성공 시 FirebaseAuth.instancel.currentUser!.uid를 통해 해당 사용자의 uid에 접근 => 이후 editprofile_screen 등에서 해당 uid의 문서를 읽거나 수정
 
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -126,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 48.0), // 비밀번호 필드와 버튼 사이 여백
               //로그인 버튼
               ElevatedButton(
-               /* onPressed: () {
+                /* onPressed: () {
                   // TODO: 로그인 로직 구현
                   print('Email: ${_emailController.text}');
                   print('Password: ${_passwordController.text}');
@@ -135,37 +134,35 @@ class _LoginScreenState extends State<LoginScreen> {
                   Navigator.pushReplacementNamed(context,'/editprofile');
                 },*/
                 onPressed: () async {
-                final email = _emailController.text.trim();
-                final password = _passwordController.text.trim();
+                  final email = _emailController.text.trim();
+                  final password = _passwordController.text.trim();
 
-                //email과 password가 입력이 안되어 있다면
-                if (email.isEmpty || password.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('이메일과 비밀번호를 입력해주세요.')),
-                  );
-                 return;
-                 }
+                  //email과 password가 입력이 안되어 있다면
+                  if (email.isEmpty || password.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('이메일과 비밀번호를 입력해주세요.')),
+                    );
+                    return;
+                  }
 
-              try {
+                  try {
+                    // 1. Firebase 인증 시도
+                    await FirebaseAuth.instance.signInWithEmailAndPassword(
+                      email: email,
+                      password: password,
+                    );
 
-                 // 1. Firebase 인증 시도
-                 await FirebaseAuth.instance.signInWithEmailAndPassword(
-                 email: email,
-                 password: password,
-                );
-
-              // 2. 성공하면 홈으로 이동
-               Navigator.pushReplacementNamed(context, '/editprofile');
-              } catch (e) {
-             // 3. 실패하면 에러 메시지 출력
-                ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('로그인 실패: ${e.toString()}')),
-                  );
-                           }
+                    // 2. 성공하면 홈으로 이동
+                    Navigator.pushReplacementNamed(context, '/editprofile');
+                  } catch (e) {
+                    // 3. 실패하면 에러 메시지 출력
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('로그인 실패: ${e.toString()}')),
+                    );
+                  }
                 },
 
-
-                 style: ElevatedButton.styleFrom(
+                style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF557153), // 사진과 유사한 녹색 계열 색상
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   shape: RoundedRectangleBorder(
@@ -183,7 +180,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 24.0), // 버튼과 회원가입 링크 사이 여백
-             
               // 회원가입 링크
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
