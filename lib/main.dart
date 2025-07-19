@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:formydisaster/screens/map_screen.dart';
 import 'firebase_options.dart';
 import 'screens/signup_screen.dart';
 import 'screens/login_screen.dart';
@@ -27,6 +28,11 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Pretendard',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
       ),
+
+      home: const ShelterMapScreen(),
+      debugShowCheckedModeBanner: false,
+
+/*
       // Firebase 로그인 상태에 따라 초기 화면 분기
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
@@ -44,6 +50,13 @@ class MyApp extends StatelessWidget {
           return const LoginScreen();
         },
       ),
+
+
+*/
+
+
+
+
       // routes: {
       //   '/': (context) => const SplashScreen(),
       //   '/login': (context) => const LoginScreen(),
