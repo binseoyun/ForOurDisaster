@@ -9,6 +9,7 @@ import 'screens/home_screen.dart';
 import 'screens/mypage_screen.dart';
 import 'screens/editprofile_screen.dart';
 import 'screens/call_screen.dart';
+import 'screens/map_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,10 +30,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
       ),
 
-      home: const ShelterMapScreen(),
-      debugShowCheckedModeBanner: false,
+      //home: const ShelterMapScreen(),
+      //debugShowCheckedModeBanner: false,
 
-/*
+
       // Firebase 로그인 상태에 따라 초기 화면 분기
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
@@ -42,18 +43,34 @@ class MyApp extends StatelessWidget {
               body: Center(child: CircularProgressIndicator()),
             );
           }
-          //if (snapshot.hasData) {
-          // 로그인된 상태라면 editprofile_screen(ProfileScreen)으로 이동
-          //return const ProfileScreen();
-          //}
+          if (snapshot.hasData) {
+           //로그인된 상태라면 HomeScreen()으로 이동
+          return const HomeScreen();
+          }else{
           // 로그인 안된 경우 → 로그인 화면
           return const LoginScreen();
+          }
         },
       ),
 
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/signup': (context) => const SignupScreen(),
+        
+        '/call': (context) => const CallScreen(),
+        '/editprofile': (context) => const ProfileScreen(),
+      },
+
+/* routes: {
+        '/login': (context) => const LoginScreen(),
+        '/signup': (context) => const SignupScreen(),
+        '/home': (context) => const HomeScreen(),
+        '/map': (context) => const ShelterMapScreen(),
+        '/call': (context) => const CallScreen(),
+        '/editprofile': (context) => const ProfileScreen(),
+      },
 
 */
-
 
 
 

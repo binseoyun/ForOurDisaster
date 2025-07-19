@@ -19,11 +19,9 @@ class _ProfileScreenState extends State<ProfileScreen> { //상태 클래스, 이
   final _nameController = TextEditingController(); //이름
   final _emailController = TextEditingController(); //이메일
   final _passwordController = TextEditingController(); //password
-  String _city = '서울'; //지역
+  final _cityController = TextEditingController(); //지역 입력용
 
-//드롭다운에 표시될 국가 목록 리스트
- //재난 문자 api 받게 되면 지역이 어떻게 분리되는지 확인 후 작업 진행
-  final List<String> city = ['서울', '대전', '부산', '인천', '광주'];
+
 
 //Firestore에서 기존 사용자 데이터 불러오기
  Future<void> _loadUserProfile() async {
@@ -36,7 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> { //상태 클래스, 이
       _nameController.text = data['name'] ?? '';
       _emailController.text = data['email'] ?? '';
       _passwordController.text = data['password'] ?? '';
-      _city = data['country'] ?? '서울';
+      _cityController.text=data['country'] ?? '';
       setState(() {}); // 화면 반영
     }
   }
@@ -51,6 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> { //상태 클래스, 이
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final city=_cityController.text.trim();
 
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -66,7 +65,7 @@ class _ProfileScreenState extends State<ProfileScreen> { //상태 클래스, 이
         'name': name,
         'email': email,
         'password': password,
-        'country': _city,
+        'country': city,
         'timestamp': FieldValue.serverTimestamp(),
       },SetOptions(merge: true)); //기존 문서가 있으면 업데이트, 없으면 생성
 
@@ -114,13 +113,13 @@ class _ProfileScreenState extends State<ProfileScreen> { //상태 클래스, 이
             _buildLabel("Name"), //Name이라는 텍스트를 좌측 정렬로 출력
             TextField( //사용자 입력을 받을 수 있는 필드
               controller: _nameController, //controller를 사용해서 사용자가 입력한 내용을 가져옴
-              decoration: _inputDecoration("Kim Do Young"), //decoration은 힌트 텍스트 및 테두리 스타일
+              decoration: _inputDecoration("Ms.Kim"), //decoration은 힌트 텍스트 및 테두리 스타일
             ),
             const SizedBox(height: 16),
             _buildLabel("Email"),
             TextField(
               controller: _emailController,
-              decoration: _inputDecoration("doyoung@gmail.com"),
+              decoration: _inputDecoration("abc@gmail.com"),
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16),
@@ -132,21 +131,10 @@ class _ProfileScreenState extends State<ProfileScreen> { //상태 클래스, 이
             ),
             const SizedBox(height: 16),
             _buildLabel("Country/Region"),
-            DropdownButtonFormField<String>( //DropdownButtonFormField는 사용자에게 국가 목록을 선택하게 함
-              value: _city,
-              decoration: _inputDecoration("Select Country"),
-              items: city
-                  .map((country) =>
-                      DropdownMenuItem(value: country, child: Text(country)))
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() { //선택된 값이 바뀌면 setState로 화면 갱신
-                    _city = value;
-                  });
-                }
-              },
-            ),
+           TextField(
+            controller: _cityController,
+            decoration: _inputDecoration("예: 서울"),
+           ),
             const Spacer(), //남은 공간을 밀어내어 아래 버튼이 하단에 고정되게 
             ElevatedButton( //저장 버튼
               onPressed:_saveToFirebase, //firebase에 저장될 수 있게 저장 함수 호출
