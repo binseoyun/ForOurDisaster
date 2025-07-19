@@ -6,7 +6,7 @@ import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/mypage_screen.dart';
-import 'screens/eiditprofile_screen.dart';
+import 'screens/editprofile_screen.dart';
 import 'screens/call_screen.dart';
 
 void main() async {

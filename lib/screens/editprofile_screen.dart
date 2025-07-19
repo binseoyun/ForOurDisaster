@@ -16,6 +16,7 @@ class _ProfileScreenState extends State<ProfileScreen> { //상태 클래스, 이
   String _selectedCountry = 'Nigeria'; //국가
 
 //드롭다운에 표시될 국가 목록 리스트
+ //재난 문자 api 받게 되면 지역이 어떻게 분리되는지 확인 후 작업 진행
   final List<String> countries = ['Nigeria', 'South Korea', 'USA', 'Japan', 'Germany'];
 
   Future<void> _saveToFirebase() async {
@@ -60,8 +61,10 @@ class _ProfileScreenState extends State<ProfileScreen> { //상태 클래스, 이
      title: const Text("프로필", style: TextStyle(fontWeight: FontWeight.bold)),
      leading: IconButton(
      icon: const Icon(Icons.arrow_back),
-    onPressed: () {
-      Navigator.pushReplacementNamed(context, '/mypage'); //현재 화면을 제거하고 mypage로 교체 이동
+    onPressed: () {//call_screen.dart 화면인 CallScreen 클래스로 이동
+     //나중에 main에 등록 후 사용
+     //Navigator.pushReplacement(context, '/call_screen');
+     
     },
   ),
 ),
