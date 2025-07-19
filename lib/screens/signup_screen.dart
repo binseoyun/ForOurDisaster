@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/auth_service.dart';
 
 //사용자가 이름,이메일,비밀번호를 입력하고 FirebaseAuth로 회원가입 시 자동으로 id가 생성=> uid를 키로 하여 Firestore에 users 컬렉션에 문서 생성
 
