@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
           //return const ProfileScreen();
           //}
           // 로그인 안된 경우 → 로그인 화면
-          return const LoginScreen();
+          return const HomeScreen();
         },
       ),
       // routes: {

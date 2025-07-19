@@ -22,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer? _timer;
   bool isLoading = true;
   String? errorMessage;
+  int _selectedIndex = 0;
 
   // OpenWeatherMap API 키 - 실제 키로 교체해야 합니다
   static const String API_KEY = 'YOUR_API_KEY_HERE';
@@ -42,6 +43,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   Future<void> _fetchWeatherData() async {
@@ -195,6 +202,28 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             const SizedBox(height: 20), // 하단 padding
+          ],
+        ),
+      ),
+      //하단 네이게이션 바
+      bottomNavigationBar: SizedBox(
+        height: 75,
+        child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Color(0xFFF9FBFA),
+          iconSize: 30,
+          selectedItemColor: Colors.black,
+          unselectedItemColor: Colors.grey,
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+            BottomNavigationBarItem(icon: Icon(Icons.location_on), label: ''),
+            BottomNavigationBarItem(icon: Icon(Icons.warning), label: ''),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              label: '',
+            ),
           ],
         ),
       ),

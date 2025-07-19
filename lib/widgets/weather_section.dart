@@ -1,6 +1,21 @@
 import 'package:flutter/material.dart';
 import '../models/weather_data.dart';
 
+class SlantClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(0, size.height - 30); //왼쪽 아래
+    path.lineTo(size.width, size.height); //오른쪽 아래
+    path.lineTo(size.width, 0); //오른쪽 위
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
 class WeatherSection extends StatelessWidget {
   final WeatherData? weatherData;
 
@@ -63,123 +78,137 @@ class WeatherSection extends StatelessWidget {
     //null 체크 이후 지역 변수에 할당
     final wData = weatherData!;
 
-    return Container(
-      width: double.infinity,
-      height: 200,
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF40513B), //배경색
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Stack(
-        children: [
-          //현재 온도 (좌측 상단)
-          Positioned(
-            left: 0,
-            top: 0,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "${wData.tempCurrent.round()}°",
-                  style: TextStyle(
-                    color: Color(0xFFF9FBFA),
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
+    return ClipPath(
+      clipper: SlantClipper(), //사선배경
+      child: Container(
+        width: double.infinity,
+        height: 200,
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF40513B), //배경색
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Stack(
+          children: [
+            // 온도
+            Positioned(
+              left: 0,
+              top: 0,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${wData.tempCurrent.toStringAsFixed(0)}°",
+                    style: const TextStyle(
+                      color: Color(0xFFF9FBFA),
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-
-                //최고/최저 온도
-                Text(
-                  "H:${wData.tempHigh.round()}° L:${wData.tempLow.round()}°",
-                  style: const TextStyle(
-                    color: Color(0xFFEBEBF5),
-                    fontSize: 16,
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        'H:${wData.tempHigh.toStringAsFixed(0)}° ',
+                        style: const TextStyle(
+                          color: Color(0xFFEBEBF5),
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        'L:${wData.tempLow.toStringAsFixed(0)}° ',
+                        style: const TextStyle(
+                          color: Color(0xFFEBEBF5),
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-
-                const SizedBox(height: 4),
-
-                //강수 확률
-                Text(
-                  "${(wData.precipitationProbablity * 100).round()} % chance of rain",
-                  style: TextStyle(color: Color(0xFFF9FBFA), fontSize: 14),
-                ),
-
-                //날씨 설명
-                Text(
-                  wData.description,
-                  style: TextStyle(
-                    color: Color(0xFFF9FBFA),
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(height: 4),
+                  Text(
+                    '강수확률: ${(wData.precipitationProbablity * 100).toInt()} %',
+                    style: const TextStyle(
+                      color: Color(0xFFF9FBFA),
+                      fontSize: 14,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          //지역명 (우측 상단
-          Positioned(
-            right: 0,
-            top: 0,
-            child: Text(
-              "📍 ${wData.locationName}",
-              style: const TextStyle(
-                color: Color(0xFFF9FBFA),
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+                  Text(
+                    wData.description,
+                    style: const TextStyle(
+                      color: Color(0xFFF9FBFA),
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
 
-          // 날씨 아이콘 (우측 중앙)
-          Positioned(
-            right: -10,
-            top: 40,
-            child: Image.asset(
-              _mapIconName(wData.iconCode),
-              height: 100,
-              fit: BoxFit.contain,
+            //지역명 (우측 상단
+            Positioned(
+              right: 0,
+              top: 0,
+              child: Text(
+                "📍 ${wData.locationName}",
+                style: const TextStyle(
+                  color: Color(0xFFF9FBFA),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
-          ),
 
-          // 추가 정보 (우측 하단)
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  "Humidity: ${wData.humidity}%",
-                  style: const TextStyle(
-                    color: Color(0xFFEBEBF5),
-                    fontSize: 12,
-                  ),
+            // 날씨 아이콘 (우측 중앙앙)
+            Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: Image.asset(
+                  _mapIconName(wData.iconCode),
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  "Wind: ${wData.windSpeed.toStringAsFixed(1)} m/s",
-                  style: const TextStyle(
-                    color: Color(0xFFEBEBF5),
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  "UV Index: ${wData.uvi.toStringAsFixed(1)}",
-                  style: const TextStyle(
-                    color: Color(0xFFEBEBF5),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+
+            // 추가 정보 (우측 하단)
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    "Humidity: ${wData.humidity}%",
+                    style: const TextStyle(
+                      color: Color(0xFFEBEBF5),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    "Wind: ${wData.windSpeed.toStringAsFixed(1)} m/s",
+                    style: const TextStyle(
+                      color: Color(0xFFEBEBF5),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    "UV Index: ${wData.uvi.toStringAsFixed(1)}",
+                    style: const TextStyle(
+                      color: Color(0xFFEBEBF5),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

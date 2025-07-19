@@ -10,10 +10,10 @@ class DisasterAlertSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFEDF1D6),
+        color: const Color(0xFFF6FADD),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -26,7 +26,7 @@ class DisasterAlertSection extends StatelessWidget {
               const Text(
                 "최근 재난 알림",
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF150502),
                 ),
@@ -48,8 +48,7 @@ class DisasterAlertSection extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 12),
-
+          const SizedBox(height: 8), //Spacing
           // 알림 카드들
           ...alerts.map(
             (alert) => _buildDisasterAlertCard(
@@ -65,12 +64,11 @@ class DisasterAlertSection extends StatelessWidget {
 
   Widget _buildDisasterAlertCard(String title, String message, String time) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Color(0xFFEDF1D6),
+        color: Color(0xFFF6FADD), // 살짝 다른 색상 추천
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEDF1D6)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -79,42 +77,47 @@ class DisasterAlertSection extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.warning_amber_rounded,
-                    color: Color(0xFFF4A259),
-                    size: 20,
+          // 🟡 좌측 큰 아이콘
+          Icon(Icons.warning_amber_rounded, color: Color(0xFFF4A259), size: 50),
+          const SizedBox(width: 12),
+
+          // 📝 우측 텍스트 컨텐츠
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF150502),
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF333333),
-                    ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  time,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF666666),
                   ),
-                ],
-              ),
-              Text(
-                time,
-                style: const TextStyle(fontSize: 12, color: Color(0xFF666666)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            message,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF555555)),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF555555),
+                    height: 1.4,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),
