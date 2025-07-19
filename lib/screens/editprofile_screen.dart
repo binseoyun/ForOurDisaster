@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; //나중에 firestore 만들어서 연결해야함
+import 'package:firebase_auth/firebase_auth.dart'; //현재 로그인된 사용자의 uid를 불러와야 함
+
+
 
 class ProfileScreen extends StatefulWidget { //프로필 화면을 구성하는 StatefulWidget
   const ProfileScreen({super.key});
@@ -13,13 +16,35 @@ class _ProfileScreenState extends State<ProfileScreen> { //상태 클래스, 이
   final _nameController = TextEditingController(); //이름
   final _emailController = TextEditingController(); //이메일
   final _passwordController = TextEditingController(); //password
-  String _selectedCountry = 'Nigeria'; //국가
+  String _city = '서울'; //지역
 
 //드롭다운에 표시될 국가 목록 리스트
  //재난 문자 api 받게 되면 지역이 어떻게 분리되는지 확인 후 작업 진행
-  final List<String> countries = ['Nigeria', 'South Korea', 'USA', 'Japan', 'Germany'];
+  final List<String> city = ['서울', '대전', '부산', '인천', '광주'];
 
+//Firestore에서 기존 사용자 데이터 불러오기
+ Future<void> _loadUserProfile() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    if (doc.exists) {
+      final data = doc.data()!;
+      _nameController.text = data['name'] ?? '';
+      _emailController.text = data['email'] ?? '';
+      _passwordController.text = data['password'] ?? '';
+      _city = data['country'] ?? '서울';
+      setState(() {}); // 화면 반영
+    }
+  }
+
+  //Firestore에 사용자 데이터 업데이트
   Future<void> _saveToFirebase() async {
+ //이 uid를 Firestore 문서의 ID로 사용해 정보를 불러오거나 수정
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if(uid==null) return; //사용자 정보 없으면
+   
+
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
@@ -33,13 +58,14 @@ class _ProfileScreenState extends State<ProfileScreen> { //상태 클래스, 이
 
 //firestore 버전 업그레이드 해서 연동 필요(데이터 설계해야함)
     try {
-      await FirebaseFirestore.instance.collection('users').add({
+      //uid는 회원가입 혹은 로그인 할때 Firebase가 자동 발급
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'name': name,
         'email': email,
         'password': password,
-        'country': _selectedCountry,
+        'country': _city,
         'timestamp': FieldValue.serverTimestamp(),
-      });
+      },SetOptions(merge: true)); //기존 문서가 있으면 업데이트, 없으면 생성
 
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -51,6 +77,14 @@ class _ProfileScreenState extends State<ProfileScreen> { //상태 클래스, 이
       );
     }
   }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile(); // 앱 시작 시 데이터 불러오기
+  }
+
+
 
 //build() 매서드 : 화면 UI 구성
   @override
@@ -96,25 +130,25 @@ class _ProfileScreenState extends State<ProfileScreen> { //상태 클래스, 이
             const SizedBox(height: 16),
             _buildLabel("Country/Region"),
             DropdownButtonFormField<String>( //DropdownButtonFormField는 사용자에게 국가 목록을 선택하게 함
-              value: _selectedCountry,
+              value: _city,
               decoration: _inputDecoration("Select Country"),
-              items: countries
+              items: city
                   .map((country) =>
                       DropdownMenuItem(value: country, child: Text(country)))
                   .toList(),
               onChanged: (value) {
                 if (value != null) {
                   setState(() { //선택된 값이 바뀌면 setState로 화면 갱신
-                    _selectedCountry = value;
+                    _city = value;
                   });
                 }
               },
             ),
             const Spacer(), //남은 공간을 밀어내어 아래 버튼이 하단에 고정되게 
             ElevatedButton( //저장 버튼
-              onPressed: (){
-                //나중에 Firebase 저장 로직 작성
-              },
+              onPressed:_saveToFirebase, //firebase에 저장될 수 있게 저장 함수 호출
+            
+            //firebase_auth를 통해 로그인한 사용자 정보 연동, Firestore에 저장된 사용자 불러오기, 수정 시 기존값 불러오기 등
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF918B6E),
                 minimumSize: const Size(double.infinity, 50),
