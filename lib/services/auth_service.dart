@@ -17,7 +17,8 @@ class AuthService {
   }) async {
     return await _auth.signInWithEmailAndPassword(
       email: email,
-      password: password);
+      password: password,
+    );
   }
 
   Future<UserCredential> signUp({
@@ -26,22 +27,19 @@ class AuthService {
   }) async {
     return await _auth.createUserWithEmailAndPassword(
       email: email,
-      password: password);
+      password: password,
+    );
   }
 
   Future<void> signOut() async {
     await _auth.signOut();
   }
 
-  Future<void> resetPassword(
-    {required String email,
-    }) async {
+  Future<void> resetPassword({required String email}) async {
     await _auth.sendPasswordResetEmail(email: email);
   }
 
-  Future<void> updateUsername({
-    required String username,
-  }) async {
+  Future<void> updateUsername({required String username}) async {
     await _auth.currentUser!.updateDisplayName(username);
   }
 
@@ -72,5 +70,4 @@ class AuthService {
     //updatePassword는 security sensitive operation이므로 credential로 reauthentication 필요
     await _auth.currentUser!.updatePassword(newPassword);
   }
-
 }

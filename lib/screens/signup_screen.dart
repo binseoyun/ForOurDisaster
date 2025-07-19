@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'login_screen.dart';
 import '../services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -13,6 +14,13 @@ class _SignupScreenState extends State<SignupScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  String? emailErrorText;
+
+  bool isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(email);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +65,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 decoration: InputDecoration(
                   labelText: 'Full Name',
                   hintText: '성함',
-                  prefixIcon: Icon(Icons.email_outlined),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -69,9 +76,22 @@ class _SignupScreenState extends State<SignupScreen> {
               //Email
               TextField(
                 controller: _emailController,
+                onChanged: (value) {
+                  setState(() {
+                    if (value.isEmpty) {
+                      emailErrorText = '이메일을 입력해주세요.';
+                    } else if (!isValidEmail(value.trim())) {
+                      emailErrorText = '유효하지 않은 이메일 형식입니다.';
+                    } else {
+                      emailErrorText = null;
+                    }
+                  });
+                },
                 decoration: InputDecoration(
                   labelText: 'Email',
                   hintText: '이메일',
+                  prefixIcon: Icon(Icons.email_outlined),
+                  errorText: emailErrorText,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -101,8 +121,71 @@ class _SignupScreenState extends State<SignupScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
-                    //TODO: 회원가입 로직
+                  onPressed: () async {
+                    final name = _nameController.text.trim();
+                    final email = _emailController.text.trim();
+                    final password = _passwordController.text.trim();
+
+                    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('모든 항목을을 채워주세요.')),
+                      );
+                      return;
+                    }
+
+                    if (!isValidEmail(email)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('이메일 형식이 올바르지 않습니다.')),
+                      );
+                      return;
+                    }
+
+                    try {
+                      //회원가입
+                      await authService.value.signUp(
+                        email: email,
+                        password: password,
+                      );
+
+                      //사용자 이름 설정
+                      await authService.value.updateUsername(username: name);
+
+                      //성공 메세지
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('회원가입이 완료되었습니다.')),
+                      );
+
+                      //로그인 화면으로 이동
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                      );
+                    } on FirebaseAuthException catch (e) {
+                      print('FirebaseAuthException: ${e.code}, ${e.message}');
+                      String message;
+                      switch (e.code) {
+                        case 'invalid-email':
+                          message = '유효하지 않은 이메일 형식입니다다.';
+                          break;
+                        case 'email-already-in-use':
+                          message = '이미 사용 중인 이메일입니다.';
+                          break;
+                        case 'weak-password':
+                          message = '비밀번호는 6자 이상이어야 합니다.';
+                          break;
+                        default:
+                          message = '회원가입 중 오류가 발생했습니다: ${e.code})';
+                      }
+
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(message)));
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('예기지 못한 오류가 발생했습니다다: $e')),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4B6045),
@@ -116,6 +199,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                       fontFamily: 'Pretendard',
+                      color: Color(0xFFF9FBFA),
                     ),
                   ),
                 ),
