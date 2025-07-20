@@ -10,7 +10,8 @@ import 'screens/mypage_screen.dart';
 import 'screens/editprofile_screen.dart';
 import 'screens/call_screen.dart';
 import 'screens/map_screen.dart';
-import 'screens/menual_screen.dart';
+import 'screens/manual_screen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
