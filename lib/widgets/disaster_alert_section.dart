@@ -10,7 +10,7 @@ class DisasterAlertSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFF6FADD),
@@ -48,7 +48,8 @@ class DisasterAlertSection extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 8), //Spacing
+          const SizedBox(height: 8),
+
           // 알림 카드들
           ...alerts.map(
             (alert) => _buildDisasterAlertCard(
@@ -64,8 +65,8 @@ class DisasterAlertSection extends StatelessWidget {
 
   Widget _buildDisasterAlertCard(String title, String message, String time) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       decoration: BoxDecoration(
         color: Color(0xFFF6FADD), // 살짝 다른 색상 추천
         borderRadius: BorderRadius.circular(12),

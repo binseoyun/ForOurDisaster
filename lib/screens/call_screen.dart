@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart'; //전화번호 클릭 시 전�
 import 'editprofile_screen.dart'; //설정 버튼 누리면 이동할 화면'
 import 'package:shared_preferences/shared_preferences.dart'; //연락처가 local에 저장될 수 있게
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CallScreen extends StatefulWidget {
   //StatefulWidget으로 정의하여, 연락처 추가/삭제 시 UI 업데이트
@@ -16,6 +17,7 @@ class _CallScreenState extends State<CallScreen> {
   String myEmergencyNumber = '010-0000-1111'; //초기 연락처
   final List<Map<String, String>> addedContacts = []; //사용자가 추가한 이름과 연락처 저장
 
+  @override
   @override
   void initState() {
     super.initState();
@@ -51,6 +53,13 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   void _showAddContactDialog() {
+    if (addedContacts.length >= 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('긴급 연락처는 최대 5개까지 추가할 수 있습니다.')),
+      );
+      return;
+    }
+
     final nameController = TextEditingController(); //이름관련
     final numberController = TextEditingController(); //전화번호 관련
 
@@ -220,11 +229,12 @@ class _CallScreenState extends State<CallScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Padding(
-        //전체 ListView
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: ListView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 30), // 상단 여백 추가
             Row(
               children: [
                 Expanded(
@@ -253,12 +263,32 @@ class _CallScreenState extends State<CallScreen> {
             const SizedBox(height: 12),
 
             // 🔽 추가된 긴급 연락처 표시
-            if (addedContacts.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              ...addedContacts.asMap().entries.map(
-                (entry) => buildContactChip(entry.value, entry.key),
+            SizedBox(
+              height: 300, // 5개 연락처에 대한 고정 높이
+              child: ListView.builder(
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  if (index < addedContacts.length) {
+                    return buildContactChip(addedContacts[index], index);
+                  } else {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '비어있음',
+                          style: TextStyle(color: Colors.grey.shade500),
+                        ),
+                      ),
+                    );
+                  }
+                },
               ),
-            ],
+            ),
 
             const SizedBox(height: 32), //충분한 간격 추가
             // 🔽 통합 안내문
@@ -280,27 +310,38 @@ class _CallScreenState extends State<CallScreen> {
               physics: const NeverScrollableScrollPhysics(),
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 1.8,
+              childAspectRatio: 1.3, // 버튼 비율 조정
               children: [
-                buildMiniButton(
-                  '긴급 신호 전화',
-                  '112',
-                  Icons.gavel,
-                  Colors.pink.shade100,
-                ),
-                buildMiniButton(
-                  '민원/상담 전화',
-                  '110',
-                  Icons.sos,
-                  Colors.yellow.shade100,
-                ),
-                buildMiniButton(
-                  '화재/구급',
-                  '119',
-                  Icons.local_fire_department,
-                  Colors.green.shade100,
-                ),
+                buildMiniButton('긴급 신호 전화', '112', Icons.gavel, Colors.pink.shade100),
+                buildMiniButton('민원/상담 전화', '110', Icons.sos, Colors.yellow.shade100),
+                buildMiniButton('화재/구급', '119', Icons.local_fire_department, Colors.green.shade100),
               ],
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+                  Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE7F0E5),
+                  foregroundColor: const Color(0xFF4B6045),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text(
+                  'Sign Out',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
           ],
         ),

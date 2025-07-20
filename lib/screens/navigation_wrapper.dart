@@ -16,7 +16,7 @@ class NavigationWrapperState extends State<NavigationWrapper> {
   final List<Widget> _pages = [
     HomeScreen(), //홈 탭
     Placeholder(), //지도 탭
-    ManualScreen(), //재난 메뉴얼 탭
+    DisasterGuideScreen(), //재난 메뉴얼 탭
     CallScreen(), //긴급연락 탭
   ];
 
@@ -44,9 +44,7 @@ class NavigationWrapperState extends State<NavigationWrapper> {
             BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
             BottomNavigationBarItem(icon: Icon(Icons.location_on), label: ''),
             BottomNavigationBarItem(icon: Icon(Icons.warning), label: ''),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.call),
-              label: '',
+            BottomNavigationBarItem(icon: Icon(Icons.call),label: '',
             ),
           ],
         ),

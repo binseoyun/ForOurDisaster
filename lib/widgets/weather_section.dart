@@ -78,72 +78,63 @@ class WeatherSection extends StatelessWidget {
     //null 체크 이후 지역 변수에 할당
     final wData = weatherData!;
 
-    return ClipPath(
-      clipper: SlantClipper(), //사선배경
-      child: Container(
-        width: double.infinity,
-        height: 200,
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF40513B), //배경색
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Stack(
-          children: [
-            // 온도
-            Positioned(
-              left: 0,
-              top: 0,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "${wData.tempCurrent.toStringAsFixed(0)}°",
-                    style: const TextStyle(
-                      color: Color(0xFFF9FBFA),
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                    ),
+    return Container(
+      width: double.infinity,
+      height: 180,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF40513B), //배경색
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Stack(
+        children: [
+          //현재 온도 (좌측 상단)
+          Positioned(
+            left: 0,
+            top: 0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "${wData.tempCurrent.round()}°",
+                  style: TextStyle(
+                    color: Color(0xFFF9FBFA),
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text(
-                        'H:${wData.tempHigh.toStringAsFixed(0)}° ',
-                        style: const TextStyle(
-                          color: Color(0xFFEBEBF5),
-                          fontSize: 16,
-                        ),
-                      ),
-                      Text(
-                        'L:${wData.tempLow.toStringAsFixed(0)}° ',
-                        style: const TextStyle(
-                          color: Color(0xFFEBEBF5),
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
+                ),
+                const SizedBox(height: 4),
+
+                //최고/최저 온도
+                Text(
+                  "H:${wData.tempHigh.round()}° L:${wData.tempLow.round()}°",
+                  style: const TextStyle(
+                    color: Color(0xFFEBEBF5),
+                    fontSize: 16,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '강수확률: ${(wData.precipitationProbablity * 100).toInt()} %',
-                    style: const TextStyle(
-                      color: Color(0xFFF9FBFA),
-                      fontSize: 14,
-                    ),
+                ),
+
+                const SizedBox(height: 4),
+
+                //강수 확률
+                Text(
+                  "${(wData.precipitationProbablity * 100).round()} % chance of rain",
+                  style: TextStyle(color: Color(0xFFF9FBFA), fontSize: 14),
+                ),
+
+                //날씨 설명
+                Text(
+                  wData.description,
+                  style: TextStyle(
+                    color: Color(0xFFF9FBFA),
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
-                  Text(
-                    wData.description,
-                    style: const TextStyle(
-                      color: Color(0xFFF9FBFA),
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
 
             //지역명 (우측 상단
             Positioned(
@@ -159,20 +150,16 @@ class WeatherSection extends StatelessWidget {
               ),
             ),
 
-            // 날씨 아이콘 (우측 중앙앙)
-            Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: Image.asset(
-                  _mapIconName(wData.iconCode),
-                  width: 120,
-                  height: 120,
-                  fit: BoxFit.contain,
-                ),
-              ),
+          // 날씨 아이콘 (우측 중앙)
+          Positioned(
+            right: -15,
+            top: 20,
+            child: Image.asset(
+              _mapIconName(wData.iconCode),
+              height: 120,
+              fit: BoxFit.contain,
             ),
+          ),
 
             // 추가 정보 (우측 하단)
             Positioned(

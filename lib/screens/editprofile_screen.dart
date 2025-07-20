@@ -25,7 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   //재난 문자 api 받게 되면 지역이 어떻게 분리되는지 확인 후 작업 진행
   final List<String> city = ['서울', '대전', '부산', '인천', '광주'];
 
-  //Firestore에서 기존 사용자 데이터 불러오기
+//Firestore에서 기존 사용자 데이터 불러오기
   Future<void> _loadUserProfile() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
@@ -53,7 +53,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _saveToFirebase() async {
     //이 uid를 Firestore 문서의 ID로 사용해 정보를 불러오거나 수정
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return; //사용자 정보 없으면
+    if(uid==null) return; //사용자 정보 없으면
 
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
@@ -77,13 +77,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'timestamp': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true)); //기존 문서가 있으면 업데이트, 없으면 생성
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('저장 완료!')));
-
-      // 저장 완료 후 홈 화면으로 이동
       if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('저장 완료!')),
+        );
+        Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
       ScaffoldMessenger.of(
@@ -102,18 +100,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       //상단 앱바 부분
       appBar: AppBar(
-        title: const Text("프로필", style: TextStyle(fontWeight: FontWeight.bold)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            //call_screen.dart 화면인 CallScreen 클래스로 이동
-            //나중에 main에 등록 후 사용
-            //Navigator.pushReplacement(context, '/call_screen');
-          },
-        ),
-      ),
+      title: const Text("프로필", style: TextStyle(fontWeight: FontWeight.bold)),
+      leading: IconButton(
+      icon: const Icon(Icons.arrow_back),
+    onPressed: () {//call_screen.dart 화면인 CallScreen 클래스로 이동
+     //나중에 main에 등록 후 사용
+     //Navigator.pushReplacement(context, '/call_screen');
+    },
+  ),
+),
 
       //body 전체 입력 폼
       body: Padding(

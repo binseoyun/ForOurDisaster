@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -8,8 +9,10 @@ import 'screens/signup_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/editprofile_screen.dart';
-import 'screens/call_screen.dart';
 import 'screens/navigation_wrapper.dart';
+import 'screens/call_screen.dart';
+import 'screens/map_screen.dart';
+import 'screens/manual_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

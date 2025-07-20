@@ -23,6 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -74,10 +75,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       ), // 메일 아이콘
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.0), // 둥근 모서리
-                        borderSide: BorderSide.none, // 테두리 없음
+                        borderSide: BorderSide(color: Colors.grey.shade300), // 연한 회색 테두리
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
                       ),
                       filled: true, // 배경 채우기
-                      fillColor: Colors.grey[200], // 배경색
+                      fillColor: Colors.white, // 배경색
                       contentPadding: const EdgeInsets.symmetric(
                         vertical: 16.0,
                         horizontal: 16.0,
@@ -110,10 +119,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       ), // 자물쇠 아이콘
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.0), // 둥근 모서리
-                        borderSide: BorderSide.none, // 테두리 없음
+                        borderSide: BorderSide(color: Colors.grey.shade300), // 연한 회색 테두리
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
                       ),
                       filled: true, // 배경 채우기
-                      fillColor: Colors.grey[200], // 배경색
+                      fillColor: Colors.white, // 배경색
                       contentPadding: const EdgeInsets.symmetric(
                         vertical: 16.0,
                         horizontal: 16.0,
@@ -137,29 +154,30 @@ class _LoginScreenState extends State<LoginScreen> {
                   final email = _emailController.text.trim();
                   final password = _passwordController.text.trim();
 
-                  //email과 password가 입력이 안되어 있다면
-                  if (email.isEmpty || password.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('이메일과 비밀번호를 입력해주세요.')),
-                    );
-                    return;
-                  }
+                //email과 password가 입력이 안되어 있다면
+                if (email.isEmpty || password.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('이메일과 비밀번호를 입력해주세요.')),
+                  );
+                return;
+                }
 
-                  try {
-                    // 1. Firebase 인증 시도
-                    await FirebaseAuth.instance.signInWithEmailAndPassword(
-                      email: email,
-                      password: password,
-                    );
+              try {
 
-                    // 2. 성공하면 홈으로 이동
-                    Navigator.pushReplacementNamed(context, '/editprofile');
-                  } catch (e) {
-                    // 3. 실패하면 에러 메시지 출력
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('로그인 실패: ${e.toString()}')),
-                    );
-                  }
+                 // 1. Firebase 인증 시도
+                await FirebaseAuth.instance.signInWithEmailAndPassword(
+                email: email,
+                password: password,
+                );
+
+              // 2. 성공하면 홈으로 이동
+              Navigator.pushReplacementNamed(context, '/editprofile');
+              } catch (e) {
+             // 3. 실패하면 에러 메시지 출력
+                ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('로그인 실패: ${e.toString()}')),
+                  );
+                }
                 },
 
                 style: ElevatedButton.styleFrom(
@@ -180,6 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 24.0), // 버튼과 회원가입 링크 사이 여백
+
               // 회원가입 링크
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
