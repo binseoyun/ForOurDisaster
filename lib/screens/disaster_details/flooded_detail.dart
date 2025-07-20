@@ -5,67 +5,181 @@ class FloodedDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    // 📌 섹션 제목
+    Widget sectionTitle(String title) => Padding(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+          child: Text(
+            title,
+            style: textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: const Color(0xFF0E1B0E),
+            ),
+          ),
+        );
+
+    // 📌 핵심 요령 강조 박스
+    Widget infoBox(String text) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFE7F3E7),
+              borderRadius: BorderRadius.circular(8),
+              border: Border(left: BorderSide(width: 4, color: Color(0xFF4E974E))),
+            ),
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, color: Color(0xFF4E974E), size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    text,
+                    style: textTheme.bodyMedium?.copyWith(fontSize: 13, height: 1.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+
+    // 📌 상세 요령 카드
+    Widget detailCard({required IconData icon, required String title, required String desc}) {
+      return Card(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        elevation: 0.5,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Icon(icon, size: 28, color: const Color(0xFF0E1B0E)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF0E1B0E),
+                        )),
+                    const SizedBox(height: 4),
+                    Text(desc,
+                        style: textTheme.bodyMedium?.copyWith(
+                          fontSize: 14,
+                          color: const Color(0xFF4E974E),
+                          height: 1.4,
+                        )),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 📌 연락처 카드
+    Widget contactCard(String title, String phone) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 3)],
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.phone_in_talk, color: Color(0xFF4E974E)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      )),
+                  const SizedBox(height: 2),
+                  Text(phone,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[700],
+                        fontSize: 13,
+                      )),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('침수 행동 요령'),
-        backgroundColor: Colors.green.shade200,
-        foregroundColor: Colors.black,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: const [
-            Text(
-              '■ 침수 상황 시 상세 행동요령',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+      backgroundColor: Color(0xFFFFFFFF),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 상단 헤더 (눈 아이콘 + 제목)
+            //뒤로 가기 버튼을 눌러서 뒤로 갈 수 있게 아이콘 추가
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                  SizedBox(width: 8),
+                  Text(
+                      "침수",
+                      style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0E1B0E),
+                        ),
+                      ),
+                    ],
+                  ),
+              ),
 
-            SizedBox(height: 16),
-            Text(
-              '＜ 취약지역 거주자 ＞',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text('ㆍ (지역주민) 저지대, 상습침수지역 거주자는 기상정보를 수시로 확인하고 대피를 준비합니다.'),
-            Text('　※ 사전대피가 필요할 경우 전기, 가스를 차단하고 대피합니다.'),
-            Text('ㆍ (상가) 많은 비가 예보되면 전기 시설물(간판 등)을 건물 안으로 옮깁니다.'),
-            Text('ㆍ (마을관리자) 마을방송·비상연락망을 통해 외출 자제를 당부하고, 대피 장소를 사전 안내합니다.'),
+           
+            Expanded(
+              child: ListView(
+                children: [
+                  sectionTitle("핵심 행동요령"),
+                  infoBox("침수된 지역은 절대 접근하지 않습니다."),
 
-            SizedBox(height: 16),
-            Text(
-              '＜ 지하공간 거주･관리･이용자 ＞',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text('ㆍ 비상상황에 대비해 방범창 절단용 공구(절단기 등)를 사전에 준비합니다.'),
-            Text('ㆍ 부유용품(구명조끼, 튜브, 스티로폼 등)을 준비해 탈출에 대비합니다.'),
-            Text('ㆍ 지하역사, 지하주차장 등은 비상구 위치와 대피경로를 평소 익혀둡니다.'),
+                  sectionTitle("상세행동요령"),
+                  detailCard(
+                    icon: Icons.directions_railway,
+                    title: "보행자",
+                    desc: "하수도, 맨홀 근처는 추락으로 인한 휩쓸림 사고가 발생할 수 있으므로 접근을 금지합니다.",
+                  ),
+                  detailCard(
+                    icon: Icons.directions_walk_sharp,
+                    title: "지하 공간 이용자",
+                    desc: "물이 집 안으로 들어오고 있는 상황이라면 출입문부터 개방합니다.",
+                  ),
 
-            SizedBox(height: 16),
-            Text(
-              '＜ 공동주택 관리자 ＞',
-              style: TextStyle(fontWeight: FontWeight.bold),
+                 detailCard(
+                  icon: Icons.directions_walk,
+                  title: "차량 이용자", 
+                  desc: "차량이 침수된 상황에서 외부 수압으로 문이 열리지 않을 때는 좌석 목받침 하단 철재봉을 이용하여 유리창을 깨서 대피합니다.",
+      
+                  )
+                  ,
+                  sectionTitle("주요기관 연락처"),
+                  contactCard("소관부서:자연재난대응과", "044-205-5233"),
+                 
+                ],
+              ),
             ),
-            SizedBox(height: 8),
-            Text('ㆍ 평상시 물막이 판, 모래주머니, 양수기를 준비하고 설치자도 지정합니다.'),
-            Text('　- 비 유입 시 지하공간은 5~10분 내 침수되므로 입구별 담당자를 정합니다.'),
-            Text('ㆍ 대피장소를 안내하고 차량 이동은 호우 전까지만 가능하도록 조치합니다.'),
-            Text('　- 물막이 판 설치 이후에는 차량 이동이 불가함을 안내합니다.'),
-            Text('ㆍ 독거노인, 장애인 등 안전취약계층의 대피 정보를 사전 공지하고 수시로 확인합니다.'),
-
-            SizedBox(height: 16),
-            Text(
-              '＜ 차량 이용자 ＞',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text('ㆍ 비상 탈출용 차량용 망치를 구비합니다.'),
-            Text('ㆍ 침수 예상 지역의 지하공간 주차를 금지합니다.'),
-            Text('ㆍ 하천변, 해변가, 저지대 주차 차량은 안전한 곳으로 이동시킵니다.'),
-            Text('　- 대피 권고 시 둔치 주차장의 차량은 이동하고, 연락처를 차량에 남깁니다.'),
           ],
         ),
       ),
+      
     );
   }
 }

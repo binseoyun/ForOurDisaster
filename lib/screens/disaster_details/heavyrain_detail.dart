@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class SnowDetailPage extends StatelessWidget {
-  const SnowDetailPage({super.key});
+class HeavyrainDetailPage extends StatelessWidget {
+  const HeavyrainDetailPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +133,7 @@ class SnowDetailPage extends StatelessWidget {
               children: const [
                   SizedBox(width: 8),
                   Text(
-                      "대설",
+                      "호우",
                       style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -144,28 +144,32 @@ class SnowDetailPage extends StatelessWidget {
                   ),
               ),
 
-           
             Expanded(
               child: ListView(
                 children: [
                   sectionTitle("핵심 행동요령"),
-                  infoBox("야외활동을 자제하되, 불가피하게 외출할 경우에는 대중교통을 이용하거나 자동차의 월동 장비를 반드시 구비해야 합니다."),
+                  infoBox("호우가 시작된 때에는 신속히 안전한 곳으로 대피하고, 외출을 삼가며 이웃이나 가족과의 연락을 통해 안전 여부를 확인합니다."),
 
                   sectionTitle("상세행동요령"),
                   detailCard(
                     icon: Icons.directions_bus,
-                    title: "일반가정",
-                    desc: "출·퇴근을 평소보다 조금 일찍하고, 자가용 대신 지하철,버스 등 대중교통을 이용하세요",
+                    title: "하천급류",
+                    desc: "호우,태풍 등으로 하천 수위가 높아지는 경우 하천 주변에 접근하지 않습니다.",
                   ),
                   detailCard(
                     icon: Icons.directions_car,
-                    title: "차량 이용자",
-                    desc: "부득이 차량을 이용할 경우에는 반드시 자동차 월동용품(스노체인(스프레이 체인), 모래주머니, 염화칼슘, 삽 등)을 휴대합니다.",
+                    title: "차량 침수",
+                    desc: "조금이라도 침수된 지하 차도와 도로는 절대 지나가지 않습니다.",
                   ),
 
+                  detailCard(
+                    icon: Icons.directions_off, 
+                    title: "낙뢰", 
+                    desc: "번개를 본 후 30초 이내에 천둥소리를 들었다면 신속히 안전한 장소로 대피하여  \n즉시 몸을 낮추고, 물이 없는 움푹 파일 곳이나 동굴 안으로 대피합니다"
+                    ),
+                 
                   sectionTitle("주요기관 연락처"),
-                  contactCard("행정안전부 중앙재난안전상황실", "044)205-1542~3"),
-                  contactCard("소관부서:자연재난대응과", "044-205-5232"),
+                  contactCard("소관부서:자연재난대응과", "044-205-5233"),
                 ],
               ),
             ),

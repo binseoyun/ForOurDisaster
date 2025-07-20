@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class SnowDetailPage extends StatelessWidget {
-  const SnowDetailPage({super.key});
+class ExtremehotDetailPage extends StatelessWidget {
+  const ExtremehotDetailPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +133,7 @@ class SnowDetailPage extends StatelessWidget {
               children: const [
                   SizedBox(width: 8),
                   Text(
-                      "대설",
+                      "폭염",
                       style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -144,28 +144,32 @@ class SnowDetailPage extends StatelessWidget {
                   ),
               ),
 
-           
             Expanded(
               child: ListView(
                 children: [
                   sectionTitle("핵심 행동요령"),
-                  infoBox("야외활동을 자제하되, 불가피하게 외출할 경우에는 대중교통을 이용하거나 자동차의 월동 장비를 반드시 구비해야 합니다."),
+                  infoBox("TV, 라디오, 인터넷 등에서 폭염이 예보된 때에는 최대한 야외활동을 자제하고 주변의 독거노인 등 건강이 염려되는 분들의 안부를 살펴봅니다."),
 
                   sectionTitle("상세행동요령"),
                   detailCard(
                     icon: Icons.directions_bus,
-                    title: "일반가정",
-                    desc: "출·퇴근을 평소보다 조금 일찍하고, 자가용 대신 지하철,버스 등 대중교통을 이용하세요",
+                    title: "일반 가정에서",
+                    desc: "야외활동을 최대한 자제하고, 외출이 꼭 필요한 경우에는 창이 넓은 모자와 가벼운 옷차림을 하고 물병을 반드시 휴대합니다.",
                   ),
                   detailCard(
                     icon: Icons.directions_car,
-                    title: "차량 이용자",
-                    desc: "부득이 차량을 이용할 경우에는 반드시 자동차 월동용품(스노체인(스프레이 체인), 모래주머니, 염화칼슘, 삽 등)을 휴대합니다.",
+                    title: "직장에서",
+                    desc: "점심시간 등을 이용하여 10~15분 정도의 낮잠으로 개인 건강을 유지합니다.",
                   ),
 
+                  detailCard(
+                    icon: Icons.directions_off, 
+                    title: "학교에서", 
+                    desc: "초·중·고등학교에서 에어컨 등 냉방장치 운영이 곤란한 경우에는 단축수업, 휴교 등 학사일정 조정을 검토하고, 식중독 사고가 발생하지 않도록 주의합니다."
+                    ),
+                 
                   sectionTitle("주요기관 연락처"),
-                  contactCard("행정안전부 중앙재난안전상황실", "044)205-1542~3"),
-                  contactCard("소관부서:자연재난대응과", "044-205-5232"),
+                  contactCard("소관부서:기후재난관리과", "044-205-6362"),
                 ],
               ),
             ),

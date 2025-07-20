@@ -1,4 +1,3 @@
-//강풍
 import 'package:flutter/material.dart';
 
 class WindDetailPage extends StatelessWidget {
@@ -6,48 +5,178 @@ class WindDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('강풍 행동 요령'),
-        backgroundColor: Colors.green.shade200,
-        foregroundColor: Colors.black,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: const [
-            Text(
-              '■ 핵심 행동요령',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              '야외활동을 자제하고 주변의 독거노인 등 건강이 염려되는 분들의 안부를 살피고 '
-              '가족이나 이웃과 주변에 있는 사람들과 함께 강풍에 대처합니다.',
-            ),
-            SizedBox(height: 16),
+    final textTheme = Theme.of(context).textTheme;
 
-            Text(
-              '■ 강풍 발생 시',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    // 📌 섹션 제목
+    Widget sectionTitle(String title) => Padding(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+          child: Text(
+            title,
+            style: textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: const Color(0xFF0E1B0E),
             ),
-            SizedBox(height: 8),
-            Text('∙ 노약자, 장애인 등이 거주하는 가정의 경우에는 비상시 대피 방법과 연락 방법을 가족 또는 이웃 등과 사전에 의논합니다.'),
-            Text('∙ 대피 시에는 쓰러질 위험이 있는 나무 밑이나 전신주 밑을 피하고 안전한 건물을 이용합니다.'),
-            Text('∙ 유리창 근처는 유리가 깨지면 다칠 위험이 있으므로 피하도록 합니다.'),
-            Text('∙ 강풍 발생 시 지붕 위나 바깥에서의 작업은 위험하니 자제하고 가급적 집 안팎의 전기 수리도 하지 않습니다.'),
-            Text('∙ 운전 중 강풍이 발생할 경우에는 반대편에서 오는 차량을 주의하고 가급적 속도를 줄여 사고를 줄이기 위한 방어운전을 합니다.'),
-            Text('∙ 강풍 발생 시 인접한 차로의 차와 안전한 거리를 유지하고, 강한 돌풍은 차를 차선 밖으로 밀어낼 수 있으므로 주의합니다.'),
-            Text('∙ 바닷가는 파도에 휩쓸릴 위험이 있으니 나가지 않습니다.'),
-            Text('∙ 공사장 작업이나 크레인 운행 등 야외작업을 중지합니다.'),
-            Text('∙ 공사장과 같이 날아오는 물건이 있거나 낙하물의 위험이 많은 곳은 가까이 가지 않도록 합니다.'),
-            Text('∙ 손전등을 미리 준비하여 강풍에 의한 정전 발생에 대비하고 유리창이 깨지면 파편이 흩어질 수 있으니 신발이나 슬리퍼를 신어 다치지 않도록 합니다.'),
-            Text('∙ 강풍이 지나간 후 땅바닥에 떨어진 전깃줄에 접근하거나 만지지 않습니다.'),
-            Text('∙ 강풍으로 파손된 전기시설 등 위험 상황을 발견했을 때에는 감전 위험이 있으니 접근하거나 만지지 말고 119나 시·군․구청에 연락하여 조치를 취하도록 합니다.'),
-            Text('∙ 강풍 발생으로 전력선이 차량에 닿는 경우, 차 안에 머무르면서 차의 금속 부분에 닿지 않도록 주의하고 주위 사람들에게 위험을 알리고 119에 연락하여 조치를 취하도록 합니다.'),
+          ),
+        );
+
+    // 📌 핵심 요령 강조 박스
+    Widget infoBox(String text) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFE7F3E7),
+              borderRadius: BorderRadius.circular(8),
+              border: Border(left: BorderSide(width: 4, color: Color(0xFF4E974E))),
+            ),
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, color: Color(0xFF4E974E), size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    text,
+                    style: textTheme.bodyMedium?.copyWith(fontSize: 13, height: 1.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+
+    // 📌 상세 요령 카드
+    Widget detailCard({required IconData icon, required String title, required String desc}) {
+      return Card(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        elevation: 0.5,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Icon(icon, size: 28, color: const Color(0xFF0E1B0E)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF0E1B0E),
+                        )),
+                    const SizedBox(height: 4),
+                    Text(desc,
+                        style: textTheme.bodyMedium?.copyWith(
+                          fontSize: 14,
+                          color: const Color(0xFF4E974E),
+                          height: 1.4,
+                        )),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 📌 연락처 카드
+    Widget contactCard(String title, String phone) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 3)],
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.phone_in_talk, color: Color(0xFF4E974E)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      )),
+                  const SizedBox(height: 2),
+                  Text(phone,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[700],
+                        fontSize: 13,
+                      )),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Color(0xFFFFFFFF),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 상단 헤더 (눈 아이콘 + 제목)
+            //뒤로 가기 버튼을 눌러서 뒤로 갈 수 있게 아이콘 추가
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                  SizedBox(width: 8),
+                  Text(
+                      "태풍",
+                      style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0E1B0E),
+                        ),
+                      ),
+                    ],
+                  ),
+              ),
+
+            Expanded(
+              child: ListView(
+                children: [
+                  sectionTitle("핵심 행동요령"),
+                  infoBox("태풍이 시작된 때에는 이웃과 함께 신속히 안전한 곳으로 대피하고, 외출을 삼가하며 이웃이나 가족에게 연락하여 안전 여부를 확인하고 위험상황을 알려줍니다."),
+
+                  sectionTitle("상세행동요령"),
+                  detailCard(
+                    icon: Icons.directions_bus,
+                    title: "위험 지역 접근 금지",
+                    desc: "침수된 도로, 지하차도, 교량,산간,계곡,하천변,해안가,공사장,가로등,신호등,전신주,지하공간 등 위험지역에는 절대 접근하지 않도록 합니다.",
+                  ),
+                  detailCard(
+                    icon: Icons.directions_car,
+                    title: "건물,집안",
+                    desc: "건물의 출입문, 창문은 닫아서 파손되지 않도록 하고, 창문이나 유리문에서 되도록 떨어져 있도록 합니다.",
+                  ),
+
+                  detailCard(
+                    icon: Icons.directions_off, 
+                    title: "실외", 
+                    desc: "운전에 주의하고, 작업 등 야외활동을 중단하고 즉시 실내로 이동합니다."
+                    ),
+                 
+                  sectionTitle("주요기관 연락처"),
+                  contactCard("소관부서:자연재난대응과", "044-205-5233"),
+                ],
+              ),
+            ),
           ],
         ),
       ),
+      
     );
   }
 }
