@@ -1,6 +1,21 @@
 import 'package:flutter/material.dart';
 import '../models/weather_data.dart';
 
+class SlantClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(0, size.height - 30); //왼쪽 아래
+    path.lineTo(size.width, size.height); //오른쪽 아래
+    path.lineTo(size.width, 0); //오른쪽 위
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
 class WeatherSection extends StatelessWidget {
   final WeatherData? weatherData;
 
@@ -65,8 +80,8 @@ class WeatherSection extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      height: 200,
-      margin: const EdgeInsets.all(16),
+      height: 180,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF40513B), //배경색
@@ -121,66 +136,66 @@ class WeatherSection extends StatelessWidget {
             ),
           ),
 
-          //지역명 (우측 상단
-          Positioned(
-            right: 0,
-            top: 0,
-            child: Text(
-              "📍 ${wData.locationName}",
-              style: const TextStyle(
-                color: Color(0xFFF9FBFA),
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+            //지역명 (우측 상단
+            Positioned(
+              right: 0,
+              top: 0,
+              child: Text(
+                "📍 ${wData.locationName}",
+                style: const TextStyle(
+                  color: Color(0xFFF9FBFA),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
 
           // 날씨 아이콘 (우측 중앙)
           Positioned(
-            right: -10,
-            top: 40,
+            right: -15,
+            top: 20,
             child: Image.asset(
               _mapIconName(wData.iconCode),
-              height: 100,
+              height: 120,
               fit: BoxFit.contain,
             ),
           ),
 
-          // 추가 정보 (우측 하단)
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  "Humidity: ${wData.humidity}%",
-                  style: const TextStyle(
-                    color: Color(0xFFEBEBF5),
-                    fontSize: 12,
+            // 추가 정보 (우측 하단)
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    "Humidity: ${wData.humidity}%",
+                    style: const TextStyle(
+                      color: Color(0xFFEBEBF5),
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  "Wind: ${wData.windSpeed.toStringAsFixed(1)} m/s",
-                  style: const TextStyle(
-                    color: Color(0xFFEBEBF5),
-                    fontSize: 12,
+                  const SizedBox(height: 2),
+                  Text(
+                    "Wind: ${wData.windSpeed.toStringAsFixed(1)} m/s",
+                    style: const TextStyle(
+                      color: Color(0xFFEBEBF5),
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  "UV Index: ${wData.uvi.toStringAsFixed(1)}",
-                  style: const TextStyle(
-                    color: Color(0xFFEBEBF5),
-                    fontSize: 12,
+                  const SizedBox(height: 2),
+                  Text(
+                    "UV Index: ${wData.uvi.toStringAsFixed(1)}",
+                    style: const TextStyle(
+                      color: Color(0xFFEBEBF5),
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
   }
 }

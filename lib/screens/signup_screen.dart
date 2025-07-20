@@ -26,7 +26,7 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FBFA),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -61,13 +61,22 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 40),
 
               //Full Name
-              TextField(
+              TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: 'Full Name',
                   hintText: '성함',
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
                   ),
                 ),
               ),
@@ -75,7 +84,7 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 20),
 
               //Email
-              TextField(
+              TextFormField(
                 controller: _emailController,
                 onChanged: (value) {
                   setState(() {
@@ -94,7 +103,16 @@ class _SignupScreenState extends State<SignupScreen> {
                   prefixIcon: Icon(Icons.email_outlined),
                   errorText: emailErrorText,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
                   ),
                 ),
               ),
@@ -102,7 +120,7 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 20),
 
               //Password
-              TextField(
+              TextFormField(
                 controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
@@ -110,7 +128,16 @@ class _SignupScreenState extends State<SignupScreen> {
                   hintText: '비밀번호',
                   prefixIcon: Icon(Icons.lock_outline),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
                   ),
                 ),
               ),

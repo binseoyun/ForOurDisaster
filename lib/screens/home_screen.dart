@@ -9,6 +9,7 @@ import '../models/weather_data.dart';
 import '../widgets/weather_section.dart';
 import '../widgets/quiz_section.dart';
 import '../widgets/disaster_alert_section.dart';
+import 'disaster_alert_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -142,14 +143,28 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Color(0xFFFFFFFF),
       appBar: AppBar(
-        title: const Text(
-          'ForOurDisaster',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        toolbarHeight: 80, // AppBar 높이 조절
+        title: Padding(
+          padding: const EdgeInsets.only(top: 20.0), // 상단 여백 추가
+          child: const Text(
+            'ForOurDisaster',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none),
-            onPressed: () {},
+          Padding(
+            padding: const EdgeInsets.only(top: 20.0, right: 10.0), // 상단 및 우측 여백 추가
+            child: IconButton(
+              icon: const Icon(Icons.notifications_none),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DisasterAlertListScreen(),
+                  ),
+                );
+              },
+            ),
           ),
         ],
         elevation: 0,
