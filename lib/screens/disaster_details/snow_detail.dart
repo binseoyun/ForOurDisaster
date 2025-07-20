@@ -7,47 +7,121 @@ class SnowDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // 전체 배경을 흰색으로 통일
       appBar: AppBar(
-        title: const Text('대설 행동 요령'),
+        title: const Text(
+          '대설',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
         backgroundColor: Colors.green.shade200,
         foregroundColor: Colors.black,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: const [
-            Text(
-              '■ 핵심 행동요령',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSection(
+              title: '핵심 행동요령',
+              content: [
+                '야외활동을 자제하되, 불가피하게 외출할 경우에는 대중교통을 이용하거나 자동차의 월동 장비를 반드시 구비해야 합니다.',
+                '보온 유지를 위해 외투, 장갑, 모자 등을 착용합니다.',
+              ],
             ),
-            SizedBox(height: 8),
-            Text(
-              '대설은 짧은 시간에 급격히 눈이 쌓이게 되므로 교통 정체·고립, '
-              '쌓인 눈의 무게로 인한 시설물 붕괴·전도 등 다양한 피해가 발생될 수 있습니다.\n'
-              '사전에 다음과 같이 가족이나 이웃과 함께 준비합니다.',
+            const SizedBox(height: 24),
+            _buildSection(
+              title: '상세 행동요령',
+              subSections: [
+                {
+                  'subtitle': '일반 가정',
+                  'items': [
+                    '눈이 많이 올 때에는 외출을 자제하여 피해를 사전 방지합니다.',
+                    '외출 시에는 바닥면이 넓은 운동화나 등산화를 착용하고, 주머니에 손을 넣지 말고 보온 장갑 등을 착용하여 체온을 유지합니다.',
+                    '출·퇴근을 평소보다 조금 일찍 하고, 자가용 대신 지하철, 버스 등 대중교통을 이용합니다.',
+                  ],
+                },
+                {
+                  'subtitle': '차량 이용자 - 운전 시',
+                  'items': [
+                    '부득이 차량을 이용할 경우에는 반드시 자동차 월동용품(스노체인, 모래주머니, 염화칼슘, 삽 등)을 휴대합니다.',
+                    '장거리 이동 시에는 월동용품, 연료, 식음료 등을 사전에 준비하고 기상상황을 확인합니다.',
+                    '결빙 구간에서는 서행하고 안전거리를 두고 운행합니다.',
+                  ],
+                },
+                {
+                  'subtitle': '차량 이용자 - 고립된 경우',
+                  'items': [
+                    '가능한 수단을 통해 구조 연락을 취합니다.',
+                    '동승자와 함께 체온을 유지하고 돌아가면서 휴식을 취합니다.',
+                    '야간에는 실내등을 켜거나 색깔 있는 옷을 눈 위에 펼쳐 구조 요청 표시를 합니다.',
+                  ],
+                },
+              ],
             ),
-            SizedBox(height: 16),
-
-            Text(
-              '■ 상세 행동요령',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            const SizedBox(height: 24),
+            _buildSection(
+              title: '주요기관 연락처',
+              content: [
+                '재난신고 119, 범죄신고 112, 민원 상담 110',
+                '행정안전부 중앙재난안전상황실: 044)205-1542~3',
+                '소관부서: 자연재난대응과(044~205~5232)',
+              ],
             ),
-            SizedBox(height: 8),
-            Text('• 재난 정보를 수신할 수 있도록 준비하고, 거주 지역의 재해위험 요인을 미리 확인합니다.'),
-            Text('- 재난정보는 TV, 라디오, 인터넷, 스마트폰 안전디딤돌 앱에서 수신합니다.'),
-            Text('  ※ 스마트폰 안전디딤돌 앱 설치를 통해 대설, 풍랑 등 기상특보나 눈사태, 시설물 붕괴 등 재난예ㆍ경보를 수신할 수 있습니다.'),
-            Text('- 거주지역의 재해위험 요인(눈사태, 붕괴위험시설물 등)은 과거 피해 자료를 통해 확인합니다.'),
-            SizedBox(height: 8),
-            Text('• 가족, 이웃과 함께 대피계획을 세웁니다.'),
-            Text('- 지역 대피장소와 안전한 이동 방법, 대피요령을 미리 숙지하고 어린이 등 재해약자에게 알려 줍니다.'),
-            Text('  ※ 지역의 대피장소는 국민재난안전포털이나 지자체 홈페이지의 임시대피소, 이재민 임시주거시설 등에서 확인할 수 있습니다.'),
-            Text('- 가족이 각각 이동할 때를 대비하여 다시 만날 장소를 미리 정합니다.'),
-            SizedBox(height: 8),
-            Text('• 재난 발생에 대비하여 비상용품을 미리 준비합니다.'),
-            Text('- 응급약품, 손전등, 식수, 비상식량, 라디오, 핸드폰 충전기, 휴대용 버너, 연료, 담요 등 비상용품을 미리 한 곳에 준비해 둡니다.'),
-            Text('- 차량이 있는 경우에는 연료를 미리 채워 두고, 차량이 없을 경우 차량이 있는 가까운 이웃과 같이 이동할 수 있도록 미리 약속해 둡니다.'),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSection({
+    required String title,
+    List<String>? content,
+    List<Map<String, dynamic>>? subSections,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F6EF),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.green.shade100),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          if (content != null)
+            ...content.map((item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text('• $item'),
+                )),
+          if (subSections != null)
+            ...subSections.map((section) => Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '▶ ${section['subtitle']}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      ...List<Widget>.from(
+                        section['items'].map<Widget>((item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 6.0),
+                              child: Text('  - $item'),
+                            )),
+                      ),
+                    ],
+                  ),
+                )),
+        ],
       ),
     );
   }

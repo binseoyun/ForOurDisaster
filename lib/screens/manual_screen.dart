@@ -39,6 +39,7 @@ class _DisasterGuideScreenState extends State<DisasterGuideScreen> {
     }).toList();
 
     return Scaffold(
+      backgroundColor: Colors.white, //전체 배경이 흰색이 되게
       appBar: AppBar( //상단에 표시되는 앱 바
         title: const Text('자연 재해 행동 요령'), //제목 가운데 정렬, 배경은 흰색, 글자 색은 검정색
         centerTitle: true,
@@ -50,20 +51,31 @@ class _DisasterGuideScreenState extends State<DisasterGuideScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // 🔍 검색창
-            TextField( 
-              controller: _searchController,
-              onChanged: (value) { //사용자가 입력하면 onChanged가 호출 => _serachQuery를 갱신
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Search disaster',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
+            // 🔍 검색창의 크기를 줄아려면 TextField를 Align+SizedBox 조합으로 감싸주면 됨
+           Align(
+  alignment: Alignment.center,
+  child: SizedBox(
+    width: 300, // 원하는 너비로 설정 (예: 300px)
+    child: TextField(
+      controller: _searchController,
+      onChanged: (value) {
+        setState(() {
+          _searchQuery = value;
+        });
+      },
+      decoration: InputDecoration(
+        hintText: 'Search disaster',
+        prefixIcon: const Icon(Icons.search),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+  ),
+),
+
+
+
+
+
             const SizedBox(height: 16),
             // 📜 리스트 (스크롤 가능)
             Expanded(
@@ -83,31 +95,42 @@ class _DisasterGuideScreenState extends State<DisasterGuideScreen> {
                           context,
                           MaterialPageRoute(builder:(context)=>const SnowDetailPage()),
                           );
+                          break;
+
                           case '산사태':
                          Navigator.push(
                           context,
                           MaterialPageRoute(builder:(context)=>const WindDetailPage()),
                           );
+                          break;
+
                           case '지진':
                          Navigator.push(
                           context, 
                           MaterialPageRoute(builder:(context)=>const EarthquakeDetailPage()),
                           );
+                          break;
+
                           case '침수':
                          Navigator.push(
                           context,
                           MaterialPageRoute(builder:(context)=>const FloodedDetailPage()),
                           );
+                          break;
+
                           case '태풍':
                          Navigator.push(
                           context,
                           MaterialPageRoute(builder:(context)=>const WindDetailPage()),
                           );
+                          break;
+
                           case '폭염':
                          Navigator.push(
                           context,
                           MaterialPageRoute(builder:(context)=>const WindDetailPage()),
                           );
+                          break;
                         
                       
                           case '호우':
@@ -115,6 +138,7 @@ class _DisasterGuideScreenState extends State<DisasterGuideScreen> {
                           context,
                           MaterialPageRoute(builder:(context)=>const WindDetailPage()),
                           );
+                          break;
                         
                          
                          default:
