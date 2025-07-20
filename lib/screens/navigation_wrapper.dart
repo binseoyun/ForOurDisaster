@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:formydisaster/screens/disaster_alert_list_screen.dart';
+import 'package:formydisaster/screens/editprofile_screen.dart';
+import 'package:formydisaster/screens/map_screen.dart';
 import 'home_screen.dart';
 import 'call_screen.dart';
 import 'manual_screen.dart';
@@ -14,10 +17,10 @@ class NavigationWrapperState extends State<NavigationWrapper> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    HomeScreen(), //홈 탭
-    Placeholder(), //지도 탭
-    DisasterGuideScreen(), //재난 메뉴얼 탭
-    CallScreen(), //긴급연락 탭
+    const HomeScreen(), //홈 탭
+    const ShelterMapScreen(), //지도 탭
+    const DisasterGuideScreen(), //재난 메뉴얼 탭
+    const CallScreen(), //긴급연락 탭
   ];
 
   void _onItemTapped(int index) {
@@ -25,8 +28,7 @@ class NavigationWrapperState extends State<NavigationWrapper> {
       _selectedIndex = index;
     });
   }
-
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_selectedIndex],

@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -12,12 +11,6 @@ import 'screens/home_screen.dart';
 import 'screens/editprofile_screen.dart';
 import 'screens/navigation_wrapper.dart';
 import 'screens/call_screen.dart';
-import 'screens/map_screen.dart';
-import 'screens/manual_screen.dart';
-<<<<<<< HEAD
-
-=======
->>>>>>> auth
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +21,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -37,13 +29,6 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Pretendard',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
       ),
-
-      home: const DisasterGuideScreen(),
-      //debugShowCheckedModeBanner: false,
-
-/*
-
-      // Firebase 로그인 상태에 따라 초기 화면 분기
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, authSnapshot) {
@@ -51,7 +36,6 @@ class MyApp extends StatelessWidget {
             return const SplashScreen();
           }
           if (authSnapshot.hasData) {
-            // 로그인된 상태라면 사용자 프로필 정보를 가져와서 분기
             return FutureBuilder<DocumentSnapshot>(
               future: FirebaseFirestore.instance
                   .collection('users')
@@ -59,72 +43,27 @@ class MyApp extends StatelessWidget {
                   .get(),
               builder: (context, userSnapshot) {
                 if (userSnapshot.connectionState == ConnectionState.waiting) {
-                  return const SplashScreen(); // 프로필 로딩 중
+                  return const SplashScreen();
                 }
                 if (userSnapshot.hasData && userSnapshot.data!.exists) {
                   final userData = userSnapshot.data!.data() as Map<String, dynamic>;
-                  // 'name' 필드가 비어있으면 최초 로그인으로 간주
                   if (userData['name'] == null || (userData['name'] as String).isEmpty) {
-                    return const ProfileScreen(); // 프로필 편집 화면으로 이동
+                    return const ProfileScreen();
                   }
                 }
-                // 프로필이 이미 있거나, 데이터를 가져오지 못한 경우 홈으로 이동
                 return const NavigationWrapper();
               },
             );
           }
-<<<<<<< HEAD
-          if (snapshot.hasData) {
-           //로그인된 상태라면 HomeScreen()으로 이동
-          return const HomeScreen();
-          }else{
-=======
->>>>>>> auth
-          // 로그인 안된 경우 → 로그인 화면
           return const LoginScreen();
-          }
         },
       ),
-<<<<<<< HEAD
-
       routes: {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
-        
-        '/call': (context) => const CallScreen(),
+        '/home': (context) => const NavigationWrapper(),
         '/editprofile': (context) => const ProfileScreen(),
       },
-
-/* routes: {
-        '/login': (context) => const LoginScreen(),
-        '/signup': (context) => const SignupScreen(),
-        '/home': (context) => const HomeScreen(),
-        '/map': (context) => const ShelterMapScreen(),
-        '/call': (context) => const CallScreen(),
-        '/editprofile': (context) => const ProfileScreen(),
-      },
-
-*/
-
-
-
-      // routes: {
-      //   '/': (context) => const SplashScreen(),
-      //   '/login': (context) => const LoginScreen(),
-      //   '/signup': (context) => const SignupScreen(),
-      //   '/home': (context) => const HomeScreen(),
-      //   '/mypage': (context) => const MypageScreen(),
-      //   '/editprofile': (context) => const ProfileScreen(),
-      //}, */
-=======
-      routes: {
-        '/login': (context) => const LoginScreen(),
-        '/signup': (context) => const SignupScreen(),
-        '/home': (context) => const NavigationWrapper(), //하단바 포함 페이지
-        '/editprofile': (context) => const ProfileScreen(),
-      },
->>>>>>> auth
     );
-    
   }
 }
