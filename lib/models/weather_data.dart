@@ -28,71 +28,45 @@ class WeatherData {
   });
 
   factory WeatherData.fromJson(Map<String, dynamic> json) {
-    //K -> Celcius
-    double kelvinToCelsius(double kelvin) => kelvin - 273.15;
+    // Safely convert Kelvin to Celsius, providing a default for null inputs
+    double kelvinToCelsius(double? kelvin) => (kelvin ?? 273.15) - 273.15;
 
-    // 현재 날씨 데이터
-    final current = json['current'] as Map<String, dynamic>;
-    final currentWeather = current['weather'][0] as Map<String, dynamic>;
+    // Safely access nested maps and lists, providing empty fallbacks
+    final current = json['current'] as Map<String, dynamic>? ?? {};
+    
+    final weatherList = current['weather'] as List<dynamic>?;
+    final currentWeather = weatherList != null && weatherList.isNotEmpty
+        ? weatherList.first as Map<String, dynamic>? ?? {}
+        : {};
 
-    // 강수량 확인 (rain 또는 snow 필드가 없을 수 있으므로 안전하게 접근)
+    final dailyList = json['daily'] as List<dynamic>? ?? [];
+    final daily = dailyList.isNotEmpty ? dailyList.first as Map<String, dynamic>? ?? {} : {};
+    final dailyTemp = daily['temp'] as Map<String, dynamic>? ?? {};
 
-    double rainAmount = 0.0;
-    double snowAmount = 0.0;
-    if (current['rain'] != null) {
-      rainAmount = (current['rain']['1h'] as num?)?.toDouble() ?? 0.0;
-    }
-    if (current['snow'] != null) {
-      snowAmount = (current['snow']['1h'] as num?)?.toDouble() ?? 0.0;
-    }
+    final hourlyList = json['hourly'] as List<dynamic>? ?? [];
+    final firstHour = hourlyList.isNotEmpty ? hourlyList.first as Map<String, dynamic>? ?? {} : {};
 
-    // 강수 유형 결정
+    // Determine precipitation type safely
     String pType = 'None';
-    if (rainAmount > 0) {
+    if ((current['rain'] as Map<String, dynamic>?)?['1h'] != null) {
       pType = 'Rain';
-    } else if (snowAmount > 0) {
+    } else if ((current['snow'] as Map<String, dynamic>?)?['1h'] != null) {
       pType = 'Snow';
     }
 
-    // 시간별 데이터에서 강수확률 가져오기 (첫 번째 시간의 데이터 사용)
-    double precipProb = 0.0;
-    if (json['hourly'] != null && (json['hourly'] as List).isNotEmpty) {
-      final firstHour = json['hourly'][0] as Map<String, dynamic>;
-      precipProb = (firstHour['pop'] as num?)?.toDouble() ?? 0.0;
-    }
-
-    // 일별 데이터에서 최고/최저 온도 가져오기
-    double tempMax = kelvinToCelsius(current['temp']);
-    double tempMin = kelvinToCelsius(current['temp']);
-
-    if (json['daily'] != null && (json['daily'] as List).isNotEmpty) {
-      final today = json['daily'][0] as Map<String, dynamic>;
-      final temp = today['temp'] as Map<String, dynamic>;
-      tempMax = kelvinToCelsius(temp['max']);
-      tempMin = kelvinToCelsius(temp['min']);
-    }
-
-    // 위치 이름 - timezone에서 추출하거나 기본값 사용
-    String resolvedLocationName = "Unknown Location";
-    if (json['timezone'] != null) {
-      String timezone = json['timezone'].toString();
-      if (timezone.contains('/')) {
-        resolvedLocationName = timezone.split('/').last.replaceAll('_', ' ');
-      }
-    }
-
+    // Construct the WeatherData object with null-safe access and default values
     return WeatherData(
-      description: currentWeather['description'],
-      iconCode: currentWeather['icon'],
-      cloudiness: current['clouds'],
-      locationName: resolvedLocationName,
-      tempCurrent: kelvinToCelsius(current['temp']),
-      tempHigh: tempMax,
-      tempLow: tempMin,
-      precipitationProbablity: precipProb,
+      description: currentWeather['description'] as String? ?? 'N/A',
+      iconCode: currentWeather['icon'] as String? ?? '01d',
+      cloudiness: current['clouds'] as int? ?? 0,
+      locationName: json['name'] as String? ?? 'Unknown Location',
+      tempCurrent: kelvinToCelsius((current['temp'] as num?)?.toDouble()),
+      tempHigh: kelvinToCelsius((dailyTemp['max'] as num?)?.toDouble()),
+      tempLow: kelvinToCelsius((dailyTemp['min'] as num?)?.toDouble()),
+      precipitationProbablity: (firstHour['pop'] as num?)?.toDouble() ?? 0.0,
       precipitationType: pType,
       uvi: (current['uvi'] as num?)?.toDouble() ?? 0.0,
-      humidity: current['humidity'],
+      humidity: current['humidity'] as int? ?? 0,
       windSpeed: (current['wind_speed'] as num?)?.toDouble() ?? 0.0,
     );
   }

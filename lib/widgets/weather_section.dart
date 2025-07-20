@@ -18,8 +18,9 @@ class SlantClipper extends CustomClipper<Path> {
 
 class WeatherSection extends StatelessWidget {
   final WeatherData? weatherData;
+  final String? errorMessage;
 
-  const WeatherSection({super.key, required this.weatherData});
+  const WeatherSection({super.key, required this.weatherData, this.errorMessage});
 
   // API 에서 받은 icon 문자열에 따라 이미지 파일명 반환 함수
   String _mapIconName(String iconCode) {
@@ -32,24 +33,33 @@ class WeatherSection extends StatelessWidget {
       case '02d': // few clouds day
         return 'lib/assets/partly-cloudy-day.png';
       case '02n': // few clouds night
-        return 'lib/assets/partly-cloud-night.png';
+        return 'lib/assets/partly-cloudy-night.png';
       case '03d':
-      case '03n': // scattered clouds
-      case '04d':
-      case '04n': // broken clouds
         return 'lib/assets/cloudy.png';
+      case '03n': // scattered clouds
+        return 'lib/assets/cloudy.png';
+      case '04d':
+        return 'lib/assets/broken-clouds.png';
+      case '04n': // broken clouds
+        return 'lib/assets/broken-clouds.png';
       case '09d':
+        return 'lib/assets/shower-rain-day.png';
       case '09n': // shower rain
+        return 'lib/assets/shower-rain-night.png';
       case '10d':
+        return 'lib/assets/rain-day.png';
       case '10n': // rain
-        return 'lib/assets/rain.png';
+        return 'lib/assets/rain-night.png';
       case '11d':
+        return 'lib/assets/thunderstorm-day.png';
       case '11n': // thunderstorm
-        return 'lib/assets/thunderstorm.png';
+        return 'lib/assets/thunderstorm-night.png';
       case '13d':
+        return 'lib/assets/snow-day.png';
       case '13n': // snow
-        return 'lib/assets/snow.png';
+        return 'lib/assets/snow-night.png';
       case '50d':
+        return 'lib/assets/wind.png';
       case '50n': // mist
         return 'lib/assets/wind.png';
       default:
@@ -59,6 +69,26 @@ class WeatherSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (errorMessage != null) {
+      return Container(
+        width: double.infinity,
+        height: 200,
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.red.shade200,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Center(
+          child: Text(
+            'Failed to load weather:\n$errorMessage',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontSize: 16),
+          ),
+        ),
+      );
+    }
+
     if (weatherData == null) {
       return Container(
         width: double.infinity,
