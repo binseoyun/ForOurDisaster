@@ -1,101 +1,163 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:formydisaster/screens/disaster_details/earthquake_detail.dart';
+import 'package:formydisaster/screens/disaster_details/flooded_detail.dart';
+import 'package:formydisaster/screens/disaster_details/snow_detail.dart';
+//각 disaster_detail.dart이 폴더내용을 import 해서 onTap 연결
+import 'disaster_details/drought_details.dart'; //가뭄 연결
+import 'disaster_details/wind_detail.dart'; //강풍 연결
 
-class ManualScreen extends StatelessWidget {
-  ManualScreen({super.key});
-  final List<Map<String, String>> disasterList = [
-    {
-      'title': '폭우',
-      'icon': '🌧️',
-      'url': 'https://www.safekorea.go.kr/idsiSFK/neo/sfk/cs/contents/prevent/prevent01.html?menuSeq=126',
-    },
-    {
-      'title': 'Flood',
-      'icon': '🌊',
-      'url': 'https://www.safekorea.go.kr/idsiSFK/neo/sfk/cs/contents/prevent/prevent02.html?menuSeq=126',
-    },
-    {
-      'title': 'Thunderstorm',
-      'icon': '🌩️',
-      'url': 'https://www.safekorea.go.kr/idsiSFK/neo/sfk/cs/contents/prevent/prevent04.html?menuSeq=126',
-    },
-    // 필요한 만큼 추가
+class DisasterGuideScreen extends StatefulWidget {
+  const DisasterGuideScreen({super.key});
+
+  @override
+  State<DisasterGuideScreen> createState() => _DisasterGuideScreenState();
+}
+
+//UI 관리하는 클래스
+class _DisasterGuideScreenState extends State<DisasterGuideScreen> {
+  final TextEditingController _searchController = TextEditingController(); //검색 입력값을 관리하기 위한 컨트롤러, 검색창에 입력된 값을 실시간 추적 가능
+
+  // 재난 데이터 전체 리스트
+  final List<Map<String, String>> _allDisasters = [           
+  {'title': '대설', 'icon': '❄️'},          
+  {'title': '산사태', 'icon': '🌄'},                 
+  {'title': '지진', 'icon': '🌍'},             
+  {'title': '침수', 'icon': '🚤'},         
+  {'title': '태풍', 'icon': '🌀'},          
+  {'title': '폭염', 'icon': '🔥'},                 
+  {'title': '호우', 'icon': '🌧️'},          
+        
   ];
 
-  void _launchURL(String url) async {
-    Uri uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      throw 'Could not launch $url';
-    }
-  }
+  String _searchQuery = ''; //사용자가 입력한 검색어를 저장하는 문자열
 
   @override
   Widget build(BuildContext context) {
+    final List<Map<String, String>> _filteredDisasters = _allDisasters.where((disaster) { //리스트 필터링
+      final title = disaster['title']!.toLowerCase();
+      return title.contains(_searchQuery.toLowerCase());
+    }).toList();
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FBFA),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+      appBar: AppBar( //상단에 표시되는 앱 바
+        title: const Text('자연 재해 행동 요령'), //제목 가운데 정렬, 배경은 흰색, 글자 색은 검정색
         centerTitle: true,
-        title: const Text(
-          '자연 재해 행동 요령',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
-        ),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Search bar
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: const [
-                  Icon(Icons.search),
-                  SizedBox(width: 8),
-                  Expanded(child: Text("Search disaster", style: TextStyle(color: Colors.grey))),
-                ],
+            // 🔍 검색창
+            TextField( 
+              controller: _searchController,
+              onChanged: (value) { //사용자가 입력하면 onChanged가 호출 => _serachQuery를 갱신
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+              decoration: InputDecoration(
+                hintText: 'Search disaster',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
             const SizedBox(height: 16),
-            // Disaster list
+            // 📜 리스트 (스크롤 가능)
             Expanded(
-              child: ListView.builder(
-                itemCount: disasterList.length,
+              child: ListView.builder( 
+                itemCount: _filteredDisasters.length,
                 itemBuilder: (context, index) {
-                  final item = disasterList[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6.0),
-                    child: GestureDetector(
-                      onTap: () => _launchURL(item['url']!),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFCBEBCF),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                        child: Row(
+                  final disaster = _filteredDisasters[index];
+
+                  //Container를 GestureDetecotr로 감싸고, onTap에서 disaster['title'] 값을 기준으로 분기해서 각 상세 페이지로 이동하도록 구현
+                  return GestureDetector(
+                    onTap: (){
+                      switch(disaster['title']){
+                        
+                       
+                          case '대설':
+                         Navigator.push(
+                          context,
+                          MaterialPageRoute(builder:(context)=>const SnowDetailPage()),
+                          );
+                          case '산사태':
+                         Navigator.push(
+                          context,
+                          MaterialPageRoute(builder:(context)=>const WindDetailPage()),
+                          );
+                          case '지진':
+                         Navigator.push(
+                          context, 
+                          MaterialPageRoute(builder:(context)=>const EarthquakeDetailPage()),
+                          );
+                          case '침수':
+                         Navigator.push(
+                          context,
+                          MaterialPageRoute(builder:(context)=>const FloodedDetailPage()),
+                          );
+                          case '태풍':
+                         Navigator.push(
+                          context,
+                          MaterialPageRoute(builder:(context)=>const WindDetailPage()),
+                          );
+                          case '폭염':
+                         Navigator.push(
+                          context,
+                          MaterialPageRoute(builder:(context)=>const WindDetailPage()),
+                          );
+                        
+                      
+                          case '호우':
+                         Navigator.push(
+                          context,
+                          MaterialPageRoute(builder:(context)=>const WindDetailPage()),
+                          );
+                        
+                         
+                         default:
+                         ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content:Text("준비 중인 페이지 입니다"))
+                         );
+                      }
+                    },
+
+                
+                  child:  Container( //Container내부에 재난 항목이 하나의 카드처럼 구성된 형태
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD6EAD5), // 연녹색
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
                           children: [
-                            Text(item['icon']!, style: const TextStyle(fontSize: 24)),
-                            const SizedBox(width: 16),
-                            Text(item['title']!, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                            const Spacer(),
-                            const Icon(Icons.arrow_forward_ios_rounded, size: 20),
+                            Text(disaster['icon']!, style: const TextStyle(fontSize: 24)),
+                            const SizedBox(width: 12),
+                            Text(disaster['title']!, style: const TextStyle(fontSize: 16)),
                           ],
                         ),
-                      ),
+                        const Icon(Icons.arrow_forward_ios),
+                      ],
                     ),
+                  ),
                   );
+                
                 },
               ),
-            ),
+            )
           ],
         ),
       ),
+      // 바텀 네비게이션은 기존과 동일하게 유지 가능
     );
   }
+
+  //각 재난 별 onTap을 처리해서 상세 페이지로 이동할 수 있게 처리
+  
 }

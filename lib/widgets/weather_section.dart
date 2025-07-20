@@ -196,7 +196,6 @@ class WeatherSection extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }
