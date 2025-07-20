@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import '../manual_screen.dart';
 
 class EarthquakeDetailPage extends StatelessWidget {
-  const EarthquakeDetailPage({super.key});
+const EarthquakeDetailPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +121,19 @@ class EarthquakeDetailPage extends StatelessWidget {
     }
 
     return Scaffold(
+
+      //앱바 추가해서 뒤로가기 버튼 나오는 지 확인 
+      appBar: AppBar(
+        title: const Text("지진", style: TextStyle(fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          onPressed: (){
+            //Navigator.pushReplacement(context, './manual_screen.dart')
+          },
+           icon: const Icon(Icons.arrow_back)),
+           
+      ),
+
+
       backgroundColor: Color(0xFFFFFFFF),
       body: SafeArea(
         child: Column(
@@ -131,6 +145,7 @@ class EarthquakeDetailPage extends StatelessWidget {
               child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
+                  
                   SizedBox(width: 8),
                   Text(
                       "지진",

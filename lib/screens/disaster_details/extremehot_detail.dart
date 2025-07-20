@@ -120,6 +120,17 @@ class ExtremehotDetailPage extends StatelessWidget {
     }
 
     return Scaffold(
+      //뒤로가기 버튼 일단 추가할건데 title text 어떻게 할지랑 뒤로 가기 어디로 할건지는 추후 결정
+       appBar: AppBar(
+        title: const Text("폭염", style: TextStyle(fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          onPressed: (){
+            //Navigator.pushReplacement(context, './manual_screen.dart')
+          },
+           icon: const Icon(Icons.arrow_back)),
+           
+      ),
+
       backgroundColor: Color(0xFFFFFFFF),
       body: SafeArea(
         child: Column(
