@@ -74,11 +74,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
-          cityName = place.locality ?? place.subLocality ?? place.administrativeArea ?? 'Unknown';
+          // Use a helper to ensure non-empty string, falling back to 'Unknown'
+          cityName = _getNonEmptyString(place.locality) ??
+                     _getNonEmptyString(place.subLocality) ??
+                     _getNonEmptyString(place.administrativeArea) ??
+                     'Unknown';
         }
       } catch (e) {
         print('Error getting city name from coordinates: $e');
-        cityName = 'Unknown Location'; // Fallback if geocoding fails
+        cityName = 'Location Unavailable'; // Fallback if geocoding fails
       }
 
       final weatherJson =
@@ -99,6 +103,11 @@ class _HomeScreenState extends State<HomeScreen> {
         errorMessage = e.toString();
       });
     }
+  }
+
+  // Helper function to return a string if it's not null or empty, otherwise null
+  String? _getNonEmptyString(String? value) {
+    return (value != null && value.isNotEmpty) ? value : null;
   }
 
   @override

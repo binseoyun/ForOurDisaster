@@ -97,7 +97,7 @@ class _QuizSectionState extends State<QuizSection> {
     if (user == null) return;
 
     final data = quizDoc!.data() as Map<String, dynamic>;
-    final correctIndex = data['answerId'];
+    final correctIndex = data['answerId'] as int?; // Make it nullable
     final isCorrect = index == correctIndex;
 
     setState(() {
@@ -168,7 +168,7 @@ class _QuizSectionState extends State<QuizSection> {
     final data = quizDoc!.data() as Map<String, dynamic>;
     final question = data['question'];
     final choices = List<String>.from(data['choices']);
-    final correctIndex = data['answerId'];
+    final correctIndex = data['answerId'] as int? ?? -1; // Provide a default if null
     final explanation = data['explanation'] ?? '';
 
     return Container(
@@ -227,7 +227,7 @@ class _QuizSectionState extends State<QuizSection> {
                             ? Colors.white
                             : (i == correctIndex
                                 ? Colors.green.withOpacity(0.3)
-                                : (selectedQuizIndex == i
+                                : (selectedQuizIndex != null && selectedQuizIndex == i
                                     ? Colors.red.withOpacity(0.3)
                                     : Colors.white)),
                         borderRadius: BorderRadius.circular(12),
@@ -251,11 +251,11 @@ class _QuizSectionState extends State<QuizSection> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isCorrect(selectedQuizIndex!, correctIndex) ? '정답입니다!' : '오답입니다.',
+                    isCorrect(selectedQuizIndex, correctIndex) ? '정답입니다!' : '오답입니다.',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: isCorrect(selectedQuizIndex!, correctIndex) ? Colors.green : Colors.red,
+                      color: isCorrect(selectedQuizIndex, correctIndex) ? Colors.green : Colors.red,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -271,7 +271,7 @@ class _QuizSectionState extends State<QuizSection> {
     );
   }
 
-  bool isCorrect(int selected, int correct) {
+  bool isCorrect(int? selected, int correct) {
     return selected == correct;
   }
 }
