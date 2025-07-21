@@ -3,8 +3,13 @@ import '../screens/disaster_alert_list_screen.dart';
 
 class DisasterAlertSection extends StatelessWidget {
   final List<Map<String, String>> alerts;
+  final String region;
 
-  const DisasterAlertSection({super.key, required this.alerts});
+  const DisasterAlertSection({
+    super.key, 
+    required this.alerts,
+    required this.region,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +43,9 @@ class DisasterAlertSection extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const DisasterAlertListScreen(),
+                      builder: (context) => DisasterAlertListScreen(
+                        initialRegion: region,
+                      ),
                     ),
                   );
                 },

@@ -9,6 +9,8 @@ import '../widgets/weather_section.dart';
 import '../widgets/quiz_section.dart';
 import '../widgets/disaster_alert_section.dart';
 import 'disaster_alert_list_screen.dart';
+import '../models/disaster_alert.dart';
+import '../services/disaster_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,11 +25,33 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
   String? errorMessage;
   final WeatherService _weatherService = WeatherService();
+  final DisasterService _disasterService = DisasterService();
+
+  //재난 문자 멤버 변수 추가
+  List<DisasterAlert> latestAlerts = [];
+
+  String cityName = 'Unknown';
+  String? _administrativeArea; // 시도 (e.g. 서울특별시)
+  String? _locality; // 시군구 (e.g. 강남구)
+
+  String _formatTime(String? rawDateTime) {
+    if (rawDateTime == null) return '';
+    try {
+      final dt = DateTime.parse(
+        rawDateTime.replaceAll('/', '-').replaceAll(' ', 'T'),
+      );
+      return DateFormat('h:mm a').format(dt);
+    } catch (e) {
+      print('Error parsing time: $rawDateTime - $e');
+      return '';
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    _fetchWeatherData();
+    _fetchWeatherData(); // This will now trigger _fetchDisasterAlerts internally
+
     // 매 시간마다 날씨 데이터 업데이트
     _timer = Timer.periodic(Duration(hours: 1), (timer) {
       _fetchWeatherData();
@@ -57,13 +81,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (permission == LocationPermission.deniedForever) {
         throw Exception(
-            'Location permissions are permanently denied, we cannot request permissions.');
+          'Location permissions are permanently denied, we cannot request permissions.',
+        );
       }
 
       Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+        desiredAccuracy: LocationAccuracy.high,
+      );
 
-      String cityName = 'Unknown Location';
       try {
         // Get city name from coordinates
         List<Placemark> placemarks = await placemarkFromCoordinates(
@@ -72,21 +97,33 @@ class _HomeScreenState extends State<HomeScreen> {
         );
 
         if (placemarks.isNotEmpty) {
-          Placemark place = placemarks[0];
-          // Use a helper to ensure non-empty string, falling back to 'Unknown'
-          cityName = _getNonEmptyString(place.locality) ??
-                     _getNonEmptyString(place.subLocality) ??
-                     _getNonEmptyString(place.administrativeArea) ??
-                     'Unknown';
+          final place = placemarks.first;
+          _administrativeArea = _getNonEmptyString(
+            place.administrativeArea,
+          ); //시도
+          _locality = _getNonEmptyString(place.locality); //시군구
+
+          print('Administrative Area: $_administrativeArea');
+          print('Locality: $_locality');
+
+          cityName = (_administrativeArea?.isNotEmpty ?? false)
+              ? '$_administrativeArea ${(_locality?.isNotEmpty ?? false) ? _locality! : ''}'
+                    .trim()
+              : ((_locality?.isNotEmpty ?? false) ? _locality! : 'Unknown');
+        } else {
+          print('placemarks 비어있음. 위치 이름을 찾지 못함.');
+          cityName = 'Unknown';
         }
       } catch (e) {
         print('Error getting city name from coordinates: $e');
         cityName = 'Location Unavailable'; // Fallback if geocoding fails
       }
 
-      final weatherJson =
-          await _weatherService.fetchWeather(position.latitude, position.longitude);
-      
+      final weatherJson = await _weatherService.fetchWeather(
+        position.latitude,
+        position.longitude,
+      );
+
       // Add the resolved city name to the json before parsing
       weatherJson['name'] = cityName;
 
@@ -94,6 +131,12 @@ class _HomeScreenState extends State<HomeScreen> {
         weatherData = WeatherData.fromJson(weatherJson);
         isLoading = false;
       });
+
+      // 현재 날짜를 YYYYMMDD 형식으로 가져오기
+      final String currentDate = DateFormat('yyyyMMdd').format(DateTime.now());
+
+      // Call disaster alerts fetch AFTER weather data and city name are resolved
+      _fetchDisasterAlerts(currentDate);
     } catch (e, stackTrace) {
       print('Error fetching weather data: $e');
       print('Stack trace: $stackTrace');
@@ -104,9 +147,62 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Helper function to return a string if it's not null or empty, otherwise null
+  //재난 문자 API 불러오기
+  Future<void> _fetchDisasterAlerts(String? currentDate) async {
+    try {
+      String regionNameForDisaster;
+
+      // 지역명 결정
+      if (_locality != null &&
+          _locality!.isNotEmpty &&
+          _locality != 'Unknown') {
+        // 시군구가 유효하면 '시도 시군구' 형태로 조합
+        regionNameForDisaster = '${_administrativeArea ?? ''} $_locality'
+            .trim();
+      } else if (_administrativeArea != null &&
+          _administrativeArea!.isNotEmpty &&
+          _administrativeArea != 'Unknown') {
+        // 시도만 유효하면 시도만 사용
+        regionNameForDisaster = _administrativeArea!;
+      } else {
+        // 둘 다 유효하지 않으면 '서울특별시'를 기본으로 사용
+        regionNameForDisaster = '서울특별시';
+        print('지역명이 Unknown이거나 비어있어 기본 지역인 서울특별시로 설정합니다');
+      }
+
+      // currentDate가 null이면 현재 날짜로 폴백
+      final String finalCrtDt =
+          currentDate ?? DateFormat('yyyyMMdd').format(DateTime.now());
+
+      print(
+        'Fetching disaster alerts for region: $regionNameForDisaster with date: $finalCrtDt',
+      );
+      final rawAlerts = await _disasterService.fetchLatestAlerts(
+        region: regionNameForDisaster,
+        crtDt: finalCrtDt,
+      );
+      print('Received ${rawAlerts.length} raw alerts from API.');
+
+      final alerts = rawAlerts
+          .map((json) => DisasterAlert.fromJson(json))
+          .toList();
+      print('Parsed ${alerts.length} DisasterAlert objects.');
+
+      setState(() {
+        latestAlerts = alerts;
+      });
+    } catch (e) {
+      print('Error fetching disaster alerts: $e');
+      setState(() {
+        errorMessage = '재난 문자 불러오기 실패: ${e.toString()}';
+      });
+    }
+  }
+
   String? _getNonEmptyString(String? value) {
-    return (value != null && value.isNotEmpty) ? value : null;
+    return (value != null && value.isNotEmpty && value != 'Unknown')
+        ? value
+        : null;
   }
 
   @override
@@ -127,14 +223,42 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(top: 20.0, right: 10.0), // 상단 및 우측 여백 추가
+            padding: const EdgeInsets.only(
+              top: 20.0,
+              right: 10.0,
+            ), // 상단 및 우측 여백 추가
             child: IconButton(
               icon: const Icon(Icons.notifications_none),
               onPressed: () {
+                String regionToPass;
+
+                if (_administrativeArea != null &&
+                    _administrativeArea!.isNotEmpty &&
+                    _administrativeArea != 'Unknown') {
+                  // _locality가 유효하면 '시도 시군구' 형태로, 아니면 '시도'만 사용
+                  if (_locality != null &&
+                      _locality!.isNotEmpty &&
+                      _locality != 'Unknown') {
+                    regionToPass = '${_administrativeArea!} ${_locality!}'
+                        .trim();
+                  } else {
+                    regionToPass = _administrativeArea!; // 시군구가 없으면 시도만 보냄
+                  }
+                } else {
+                  // _administrativeArea가 유효하지 않으면 '서울특별시'를 기본값으로 사용
+                  regionToPass = '서울특별시';
+                  print(
+                    'DisasterAlertListScreen으로 전달할 위치 정보가 아직 없어서 기본 지역인 서울특별시로 설정합니다.',
+                  );
+                }
+
+                print('DisasterAlertListScreen으로 전달하는 지역: $regionToPass');
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const DisasterAlertListScreen(),
+                    builder: (context) =>
+                        DisasterAlertListScreen(initialRegion: regionToPass),
                   ),
                 );
               },
@@ -151,28 +275,29 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 상단 날씨 정보
-            WeatherSection(weatherData: weatherData, errorMessage: errorMessage),
+            WeatherSection(
+              weatherData: weatherData,
+              errorMessage: errorMessage,
+            ),
 
             const SizedBox(height: 20),
 
             DisasterAlertSection(
-              alerts: [
-                {
-                  'title': '긴급재난문자',
-                  'message': '강풍으로 인한 시설물 피해가 예상됩니다. 외출 시 주의하시기 바랍니다.',
-                  'time': '9:36 AM',
-                },
-                {
-                  'title': '긴급재난문자',
-                  'message': '집중호우 경보가 발령되었습니다. 저지대 및 하천 근처는 피해주세요.',
-                  'time': '8:15 AM',
-                },
-                {
-                  'title': '긴급재난문자',
-                  'message': '지진 발생으로 인한 여진이 예상됩니다. 안전한 곳으로 대피하세요.',
-                  'time': '7:42 AM',
-                },
-              ],
+              alerts: latestAlerts
+                  .map(
+                    (alert) => {
+                      'title': alert.emrgStepNm,
+                      'message': alert.msgCn,
+                      'time': alert.formattedTime, //"12:27 PM 형식"
+                    },
+                  )
+                  .toList(),
+              region:
+                  _locality != null &&
+                      _locality!.isNotEmpty &&
+                      _locality != 'Unknown'
+                  ? '${_administrativeArea ?? ''} $_locality'.trim()
+                  : _administrativeArea ?? '서울특별시',
             ),
 
             const SizedBox(height: 24),
