@@ -37,7 +37,7 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
 
   //드롭다운 대피소 유형 목록과 선택값
   final Map<String,String> shelterTypes={
-    '반경 10km내 전체 대피소': '',
+    '반경 5km 내 전체 대피소': '',
     '한파 쉼터':'1',
     '무더위 쉼터':'2',
     '지진 옥외 대피장소':'3',
@@ -64,7 +64,7 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
   //공공데이터 API 호출 함수
   Future<List<Marker>> fetchShelterMarkers(LatLng position,String shelterCode) async{
      const serviceKey='C6U74L503B938FO4';
-     const delta=0.10; //10km반경 이내의 대피소 위치 지정
+     const delta=0.05; //10km반경 이내의 대피소 위치 지정
 
      final startLat=(position.latitude - delta).toStringAsFixed(6); //시작위도
      final endLat=(position.latitude+delta).toStringAsFixed(6); //종료위도
