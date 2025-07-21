@@ -88,26 +88,7 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
      //안전한 url 생성
      final url=Uri.https('www.safetydata.go.kr', '/V2/api/DSSP-IF-10941', queryParams);
 
-/*
-     final url=Uri.parse(
-      'https://www.safetydata.go.kr/V2/api/DSSP-IF-10941'
-      '?serviceKey=$serviceKey'
-      '&returnType=json'
-      '&numOfRows=100'
-      '&pageNo=1'
-      '&startLat=$startLat'
-      '&endLat=$endLat'
-      '&startLot=$startLot'
-      '&endLot=$endLot'
-     
-       
-      //나중에 대피소 별로 필터링 할 수 있게
-      //&shlt_se_cd=1 함파 쉼터
-      //&shlt_se_cd=2 무더위 쉼터
-      //&shlt_se_cd=3 지진옥외대피장소
-      //&shlt_se_cd=4 지진해일긴급대피장소
-     );*/
-       
+
        //API 요청 URL 확인
        print('대피소 API 요청 URL: $url');
 
@@ -140,13 +121,20 @@ for (var item in items) {
   //파싱한 대피소 개수 확인
       print('파싱된 대피소 개수: ${items?.length}');
 
+     //여러개 포함되어 있는 경우를 대비해서 contains로 변경
+     final filteredItems = items.where((item) {
+     final code = item['SHLT_SE_CD']?.toString() ?? '';
+     if (shelterCode.isEmpty) return true;
+      return code.split(',').map((s) => s.trim()).contains(shelterCode);
+      }).toList();
 
-      return items.map<Marker?>((item) {
-        final lat = double.tryParse(item['LAT'] ?.toString() ?? '');
-        final lon = double.tryParse(item['LOT'] ?.toString() ?? '');
-        final name = item['REARE_NM'] ?? '이름 없음';
-        final address = item['RONA_DADDR'] ?? '주소 없음';
-        final typeCode=item['SHLT_SE_CD']??'';
+
+     return filteredItems.map<Marker?>((item) {
+  final lat = double.tryParse(item['LAT']?.toString() ?? '');
+  final lon = double.tryParse(item['LOT']?.toString() ?? '');
+  final name = item['REARE_NM'] ?? '이름 없음';
+  final address = item['RONA_DADDR'] ?? '주소 없음';
+  //final typeCode = item['SHLT_SE_CD'] ?? '';
 
 
 //대피소이름은 잘 출력되고 있는 상태
@@ -155,22 +143,28 @@ for (var item in items) {
 
 //대피소 유형별 색상 지정
 double markerColor;
-  switch (typeCode) {
-    
-    case '1':
-      markerColor = BitmapDescriptor.hueAzure; // 한파쉼터
-      break;
-    case '2':
-      markerColor = BitmapDescriptor.hueOrange; // 무더위쉼터
-      break;
-    case '3':
-      markerColor = BitmapDescriptor.hueYellow; // 지진옥외대피소
-      break;
-    case '4':
-      markerColor = BitmapDescriptor.hueViolet; // 지진해일긴급대피소
-      break;
-    default:
-      markerColor = BitmapDescriptor.hueGreen; // 기본 색
+  
+  // 전체 대피소 선택 시 모든 대피소를 같은 색(초록색)으로 표시
+  if (shelterCode.isEmpty) {
+    markerColor = BitmapDescriptor.hueGreen; // 전체 대피소는 초록색
+  } else {
+    // 특정 유형 선택 시 해당 색상으로 표시
+    switch (shelterCode) {
+      case '1':
+        markerColor = BitmapDescriptor.hueAzure; // 한파쉼터 - 하늘색
+        break;
+      case '2':
+        markerColor = BitmapDescriptor.hueOrange; // 무더위쉼터 - 주황색
+        break;
+      case '3':
+        markerColor = BitmapDescriptor.hueYellow; // 지진옥외대피소 - 노란색
+        break;
+      case '4':
+        markerColor = BitmapDescriptor.hueViolet; // 지진해일긴급대피소 - 보라색
+        break;
+      default:
+        markerColor = BitmapDescriptor.hueGreen; // 기본 색
+    }
   }
 
 
@@ -364,17 +358,19 @@ return Scaffold(
                   _selectedShelterCode = value ?? '';
                   _isLoading = true;
                 });
-                //추가한 부분
-             
-              if (_currentPosition != null) {
+                
+                // 현재 위치가 있을 때만 대피소 마커 업데이트
+                if (_currentPosition != null) {
                   final markers = await fetchShelterMarkers(_currentPosition!, _selectedShelterCode);
                   setState(() {
                      _ShelterMarkers = markers.toSet();
                      _isLoading = false;
-                            });
-                    }
-               
-                _fetchCurrentLocation(); // 선택값 변경 시 재호출
+                  });
+                } else {
+                  setState(() {
+                    _isLoading = false;
+                  });
+                }
               },
             ),
           ),
@@ -397,40 +393,6 @@ return Scaffold(
       ),
 );
 
-/*
-    return Scaffold(
-      appBar: AppBar(
-        title: const Column(
-          children: [
-            Text('대피소 지도', style: TextStyle(color: Colors.black)),
-            Text('대피소 위치를 확인하세요',
-                style: TextStyle(color: Colors.grey, fontSize: 12))
-          ],
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 1,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
 
-        body: GoogleMap(
-        onMapCreated: (controller) {
-          _mapController = controller;
-          _loadFriendLocations();
-        },
-        initialCameraPosition: CameraPosition(
-          target: _currentPosition!,
-          zoom: 15,
-        ),
-        myLocationEnabled: true,
-        myLocationButtonEnabled: true,
-        markers: allMarkers,
-            ),
-    );
-
-    */
   }
 }
