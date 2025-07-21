@@ -10,6 +10,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 //3.가까운 대피소만 필터링
 //4.지도에 마커로 표시
 
+
+//현재 내 위치 띄우기 완료 => 내 위치를 기반으로 대피소 위치를 띄우게 해야함
+//1.현재 위치 가져와서 => 구현 완료
+//2.좌표 범위 계산(현재 위치 기준으로)
+//3.API 요청 URL 구성해서 대피소 데이터 가져오기
+//4.지도에 대피소 마커 표시
+
+
 class ShelterMapScreen extends StatefulWidget {
   const ShelterMapScreen({super.key});
 
