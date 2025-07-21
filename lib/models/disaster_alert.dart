@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class DisasterAlert {
   final int sn; // 일련번호
   final String crtDt; // 생성일시
@@ -19,10 +21,35 @@ class DisasterAlert {
     required this.mdfcnYmd,
   });
 
+  String get formattedTime {
+    try {
+      final dt = DateTime.parse(crtDt); // crtDt is already in ISO format
+      return DateFormat('h:mm a').format(dt);
+    } catch (e) {
+      print('Error formatting time for display: $crtDt - $e'); // Log specific error
+      return '';
+    }
+  }
+
   factory DisasterAlert.fromJson(Map<String, dynamic> json) {
+    String rawCrtDt = json['CRT_DT'] as String? ?? '';
+
+    // "YYYY/MM/DD HH:MM:SS" to "YYYY-MM-DDTHH:MM:SS"
+    String formattedCrtDt = '';
+    if (rawCrtDt.isNotEmpty) {
+      try {
+        // Replace '/' with '-' and ' ' with 'T'
+        formattedCrtDt = rawCrtDt.replaceAll('/', '-').replaceAll(' ', 'T');
+      } catch (e) {
+        print('Error pre-formatting CRT_DT in fromJson: $rawCrtDt - $e');
+        // Fallback to raw if formatting fails
+        formattedCrtDt = rawCrtDt;
+      }
+    }
+
     return DisasterAlert(
-      sn: int.parse(json['SN'].toString()),
-      crtDt: json['CRT_DT'] ?? '',
+      sn: int.tryParse(json['SN'].toString()) ?? 0,
+      crtDt: formattedCrtDt,
       msgCn: json['MSG_CN'] ?? '',
       rcptnRgnNm: json['RCPTN_RGN_NM'] ?? '',
       emrgStepNm: json['EMRG_STEP_NM'] ?? '',
@@ -34,7 +61,7 @@ class DisasterAlert {
 
   Map<String, dynamic> toJson() {
     return {
-      'SN': sn, 
+      'SN': sn,
       'CRT_DT': crtDt,
       'MSG_CN': msgCn,
       'RCPTN_RGN_NM': rcptnRgnNm,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../manual_screen.dart';
 
 class EarthquakeDetailPage extends StatelessWidget {
 const EarthquakeDetailPage({super.key});
