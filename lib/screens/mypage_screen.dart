@@ -1,13 +1,49 @@
+//사용 X, call_screen.dart 화면으로 대체
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 void main() {
-  runApp(const MypageScreen());
+  runApp(const MypageScreen());  // 여기만 수정하면 돼요!
 }
 
 class MypageScreen extends StatelessWidget {
   const MypageScreen({super.key});
+
+  void _call(String number) async {
+    final Uri telUri = Uri.parse('tel:$number');
+    if (await canLaunchUrl(telUri)) {
+      await launchUrl(telUri);
+    } else {
+      debugPrint("전화 걸 수 없음: $number");
+    }
+  }
+
+  Widget _buildEmergencyButton({
+    required IconData icon,
+    required String label,
+    required String number,
+    required Color color,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _call(number),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 32,
+              backgroundColor: color,
+              child: Icon(icon, color: Colors.white, size: 28),
+            ),
+            const SizedBox(height: 6),
+            Text(number, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(label, style: const TextStyle(fontSize: 13)),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,9 +94,6 @@ class EmergencyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("빈서윤"),
