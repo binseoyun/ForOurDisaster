@@ -6,6 +6,7 @@ import 'package:formydisaster/screens/disaster_details/heavyrain_detail.dart';
 import 'package:formydisaster/screens/disaster_details/landslide_detail.dart';
 import 'package:formydisaster/screens/disaster_details/snow_detail.dart';
 //각 disaster_detail.dart이 폴더내용을 import 해서 onTap 연결
+//가뭄 연결
 import 'disaster_details/wind_detail.dart'; //강풍 연결
 
 class DisasterGuideScreen extends StatefulWidget {
@@ -35,7 +36,7 @@ class _DisasterGuideScreenState extends State<DisasterGuideScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, String>> _filteredDisasters = _allDisasters.where((disaster) { //리스트 필터링
+    final List<Map<String, String>> filteredDisasters = _allDisasters.where((disaster) { //리스트 필터링
       final title = disaster['title']!.toLowerCase();
       return title.contains(_searchQuery.toLowerCase());
     }).toList();
@@ -82,9 +83,9 @@ class _DisasterGuideScreenState extends State<DisasterGuideScreen> {
             // 📜 리스트 (스크롤 가능)
             Expanded(
               child: ListView.builder( 
-                itemCount: _filteredDisasters.length,
+                itemCount: filteredDisasters.length,
                 itemBuilder: (context, index) {
-                  final disaster = _filteredDisasters[index];
+                  final disaster = filteredDisasters[index];
 
                   //Container를 GestureDetecotr로 감싸고, onTap에서 disaster['title'] 값을 기준으로 분기해서 각 상세 페이지로 이동하도록 구현
                   return GestureDetector(

@@ -2,7 +2,7 @@
     android:label="formydisaster"
     package="com.example.formydisaster"
     >
-    <!-- Location permissions for geolocator -->
+    <!-- Location permissions for geolocator 및 google maps -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!--Google Maps -->

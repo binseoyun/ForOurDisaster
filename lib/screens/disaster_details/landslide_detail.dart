@@ -1,3 +1,4 @@
+//산사태
 import 'package:flutter/material.dart';
 
 class LandslideDetail extends StatelessWidget {

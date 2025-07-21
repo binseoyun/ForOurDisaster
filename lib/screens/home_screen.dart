@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:async';
-import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import '../models/weather_data.dart';
+import '../services/weather_service.dart';
 import '../widgets/weather_section.dart';
 import '../widgets/quiz_section.dart';
 import '../widgets/disaster_alert_section.dart';
+import 'disaster_alert_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,11 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer? _timer;
   bool isLoading = true;
   String? errorMessage;
-
-  // OpenWeatherMap API 키 - 실제 키로 교체해야 합니다
-  static const String API_KEY = 'YOUR_API_KEY_HERE';
-  static const String BASE_URL =
-      'https://api.openweathermap.org/data/3.0/onecall';
+  final WeatherService _weatherService = WeatherService();
 
   @override
   void initState() {
@@ -45,93 +41,72 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _fetchWeatherData() async {
-    //실제 API 호출 로직(http:get)
     try {
       setState(() {
         isLoading = true;
         errorMessage = null;
       });
 
-      // 위치 권한 확인 및 요청
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          throw Exception('위치 권한이 거부되었습니다.');
+          throw Exception('Location permissions are denied');
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        throw Exception('위치 권한이 영구적으로 거부되었습니다. 설정에서 권한을 허용해주세요.');
+        throw Exception(
+            'Location permissions are permanently denied, we cannot request permissions.');
       }
 
-      // 현재 위치 가져오기
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      // 위치 이름 가져오기 (Reverse Geocoding)
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
+          desiredAccuracy: LocationAccuracy.high);
 
       String cityName = 'Unknown Location';
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks[0];
-        cityName =
-            place.locality ?? place.administrativeArea ?? 'Unknown Location';
+      try {
+        // Get city name from coordinates
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+
+        if (placemarks.isNotEmpty) {
+          Placemark place = placemarks[0];
+          // Use a helper to ensure non-empty string, falling back to 'Unknown'
+          cityName = _getNonEmptyString(place.locality) ??
+                     _getNonEmptyString(place.subLocality) ??
+                     _getNonEmptyString(place.administrativeArea) ??
+                     'Unknown';
+        }
+      } catch (e) {
+        print('Error getting city name from coordinates: $e');
+        cityName = 'Location Unavailable'; // Fallback if geocoding fails
       }
 
-      // OpenWeatherMap API 호출
-      final url = Uri.parse(
-        '$BASE_URL?lat=${position.latitude}&lon=${position.longitude}&appid=$API_KEY&units=metric',
-      );
+      final weatherJson =
+          await _weatherService.fetchWeather(position.latitude, position.longitude);
+      
+      // Add the resolved city name to the json before parsing
+      weatherJson['name'] = cityName;
 
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = json.decode(response.body);
-
-        // 위치 이름을 API 응답에 추가
-        jsonData['city_name'] = cityName;
-
-        setState(() {
-          weatherData = WeatherData.fromJson(jsonData);
-          isLoading = false;
-        });
-      } else {
-        throw Exception('날씨 데이터를 불러오는데 실패했습니다. 상태 코드: ${response.statusCode}');
-      }
-    } catch (e) {
+      setState(() {
+        weatherData = WeatherData.fromJson(weatherJson);
+        isLoading = false;
+      });
+    } catch (e, stackTrace) {
+      print('Error fetching weather data: $e');
+      print('Stack trace: $stackTrace');
       setState(() {
         isLoading = false;
         errorMessage = e.toString();
       });
-
-      // 에러 발생 시 더미 데이터 사용
-      _loadDummyData();
     }
   }
 
-  //예시 데이터 - 교체 필요 TODO API
-  void _loadDummyData() {
-    setState(() {
-      weatherData = WeatherData(
-        description: 'Thunderstorm',
-        iconCode: '11d',
-        cloudiness: 75,
-        locationName: 'Daejeon',
-        tempCurrent: 23.5,
-        tempHigh: 28.0,
-        tempLow: 18.0,
-        precipitationProbablity: 0.65,
-        precipitationType: 'Rain',
-        uvi: 5.2,
-        humidity: 80,
-        windSpeed: 3.5,
-      );
-    });
+  // Helper function to return a string if it's not null or empty, otherwise null
+  String? _getNonEmptyString(String? value) {
+    return (value != null && value.isNotEmpty) ? value : null;
   }
 
   @override
@@ -142,14 +117,28 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Color(0xFFFFFFFF),
       appBar: AppBar(
-        title: const Text(
-          'ForOurDisaster',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        toolbarHeight: 80, // AppBar 높이 조절
+        title: Padding(
+          padding: const EdgeInsets.only(top: 20.0), // 상단 여백 추가
+          child: const Text(
+            'ForOurDisaster',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none),
-            onPressed: () {},
+          Padding(
+            padding: const EdgeInsets.only(top: 20.0, right: 10.0), // 상단 및 우측 여백 추가
+            child: IconButton(
+              icon: const Icon(Icons.notifications_none),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DisasterAlertListScreen(),
+                  ),
+                );
+              },
+            ),
           ),
         ],
         elevation: 0,
@@ -162,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 상단 날씨 정보
-            WeatherSection(weatherData: weatherData),
+            WeatherSection(weatherData: weatherData, errorMessage: errorMessage),
 
             const SizedBox(height: 20),
 

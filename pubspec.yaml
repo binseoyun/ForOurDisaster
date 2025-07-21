@@ -67,16 +67,22 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - lib/assets/cloud.png
-    - lib/assets/rain.png
-    - lib/assets/snow.png
-    - lib/assets/wind.png
-    - lib/assets/thunderstorm.png
-    - lib/assets/cloudy.png
-    - lib/assets/partly-cloudy-day.png
-    - lib/assets/partly-cloudy-night.png
     - lib/assets/sun.png
     - lib/assets/moon.png
+    - lib/assets/partly-cloudy-day.png
+    - lib/assets/partly-cloudy-night.png
+    - lib/assets/cloudy.png
+    - lib/assets/broken-clouds.png
+    - lib/assets/shower-rain-day.png
+    - lib/assets/shower-rain-night.png
+    - lib/assets/rain-day.png
+    - lib/assets/rain-night.png
+    - lib/assets/thunderstorm-day.png
+    - lib/assets/thunderstorm-night.png
+    - lib/assets/snow-day.png
+    - lib/assets/snow-night.png
+    - lib/assets/wind.png
+    - lib/assets/cloud.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
