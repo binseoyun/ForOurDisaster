@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart'; //flutter의 기본 위젯 제공
 import 'package:url_launcher/url_launcher.dart'; //전화번호 클릭 시 전화 앱 실행
 import 'editprofile_screen.dart'; //설정 버튼 누리면 이동할 화면'
@@ -62,6 +64,7 @@ class _CallScreenState extends State<CallScreen> {
 
     final nameController = TextEditingController(); //이름관련
     final numberController = TextEditingController(); //전화번호 관련
+    final emailController=TextEditingController(); //이메일 관련
 
     showDialog(
       context: context,
@@ -80,6 +83,12 @@ class _CallScreenState extends State<CallScreen> {
               keyboardType: TextInputType.phone,
               decoration: const InputDecoration(hintText: "전화번호 입력"),
             ),
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(hintText: "이메일 입력"),
+            ),
+
           ],
         ),
         actions: [
@@ -88,20 +97,74 @@ class _CallScreenState extends State<CallScreen> {
             child: const Text("취소"),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async{
               final name = nameController.text.trim();
               final number = numberController.text.trim();
-              if (name.isNotEmpty && number.isNotEmpty) {
-                setState(() {
-                  //addedContacts.add(controller.text); //입력한 번호는 addedContats에 추가
-                  addedContacts.add({'name': name, "number": number});
-                });
-                saveContacts();
-              }
-              Navigator.pop(context);
-            },
-            child: const Text("추가"),
-          ),
+              final email=emailController.text.trim();
+
+            if (name.isNotEmpty && number.isNotEmpty && email.isNotEmpty) {
+           // ✅ 먼저 로컬에 추가
+            setState(() {
+            addedContacts.add({'name': name, 'number': number, 'email': email});
+             });
+           await saveContacts();
+
+           // ✅ Firestore에 저장
+          final user = FirebaseAuth.instance.currentUser;
+          if(user==null){
+             print("로그인이 안 된 상태입니다.");
+             return ;
+             }
+      
+         try{
+            await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('emergencyEmails')
+            .add({
+          'name': name,
+          'email': email,
+          'number' :number,
+          'timestamp': FieldValue.serverTimestamp(),
+          });
+          print("Firestore 저장 성공!");
+       }catch(e){
+          print("Firestore 저장 실패:$e");
+       }
+
+      // ✅ 동의 여부 확인 (단, 알림은 동의했을 때만)
+      final agreed = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("위치 공유 요청"),
+          content: const Text("위급상황 시 내 위치를 상대방에게 표시되게 하시겠습니까?"),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("취소")),
+            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("동의")),
+          ],
+        ),
+      );
+
+      if (agreed == true) {
+        // TODO: 이 이메일을 Firestore에서 사용자 찾고 → FCM 푸시 알림 전송
+        print("🔔 위치 공유 요청 푸시 알림을 보냅니다.");
+      } else {
+        print("🙅 위치 공유 요청은 하지 않았습니다.");
+      }
+
+      // ✅ 마지막으로 다이얼로그 닫기
+      Navigator.pop(context);
+    }
+  },
+  child: const Text("추가"),
+),
+
+              
+  
+      
+                
+              
+             
         ],
       ),
     );
