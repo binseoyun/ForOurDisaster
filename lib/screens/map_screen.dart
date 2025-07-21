@@ -12,6 +12,11 @@ import 'dart:convert';
 //3.가까운 대피소만 필터링
 //4.지도에 마커로 표시
 
+//반경 10km 내 전체 대피소에 초록색+파란색 섞임
+//지진 옥외 대피장소에 노란색만
+//지진 해일 긴급 대피장소에 아무것도 안뜸
+//한파쉼터에 초록색+파란색 섞임
+//무더위 쉼터에 초록색만
 
 
 class ShelterMapScreen extends StatefulWidget {
@@ -30,6 +35,17 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
   Set<Marker> _friendMarkers = {};
   Set<Marker> _ShelterMarkers={}; //대피소 마커
 
+  //드롭다운 대피소 유형 목록과 선택값
+  final Map<String,String> shelterTypes={
+    '반경 10km내 전체 대피소': '',
+    '한파 쉼터':'1',
+    '무더위 쉼터':'2',
+    '지진 옥외 대피장소':'3',
+    '지진 해일 긴급 대피장소':'4',
+
+  };
+  String _selectedShelterCode=''; //기본:전체
+
   @override
   void initState() {
     super.initState();
@@ -46,7 +62,7 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
   //현재 위치 기반 대피소 데이터 가져오기
 
   //공공데이터 API 호출 함수
-  Future<List<Marker>> fetchShelterMarkers(LatLng position) async{
+  Future<List<Marker>> fetchShelterMarkers(LatLng position,String shelterCode) async{
      const serviceKey='C6U74L503B938FO4';
      const delta=0.10; //10km반경 이내의 대피소 위치 지정
 
@@ -55,6 +71,24 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
      final startLot=(position.longitude-delta).toStringAsFixed(6); //시작경도
      final endLot=(position.longitude+delta).toStringAsFixed(6); //종료 경도
 
+
+     final queryParams={
+       'serviceKey': serviceKey,
+        'returnType': 'json',
+        'numOfRows': '100',
+        'pageNo': '1',
+        'startLat': startLat,
+        'endLat': endLat,
+        'startLot': startLot,
+        'endLot': endLot,
+     };
+     if(shelterCode.isNotEmpty){
+      queryParams['shlt_se_cd']=shelterCode;
+     }
+     //안전한 url 생성
+     final url=Uri.https('www.safetydata.go.kr', '/V2/api/DSSP-IF-10941', queryParams);
+
+/*
      final url=Uri.parse(
       'https://www.safetydata.go.kr/V2/api/DSSP-IF-10941'
       '?serviceKey=$serviceKey'
@@ -65,12 +99,14 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
       '&endLat=$endLat'
       '&startLot=$startLot'
       '&endLot=$endLot'
+     
+       
       //나중에 대피소 별로 필터링 할 수 있게
       //&shlt_se_cd=1 함파 쉼터
       //&shlt_se_cd=2 무더위 쉼터
       //&shlt_se_cd=3 지진옥외대피장소
       //&shlt_se_cd=4 지진해일긴급대피장소
-     );
+     );*/
        
        //API 요청 URL 확인
        print('대피소 API 요청 URL: $url');
@@ -93,6 +129,9 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
         print('body가 null입니다!!!');
         return [];
       }
+     
+      print('대피소 개수: ${items.length}');
+
       //각 대피소의 이름 확인
 for (var item in items) {
   print('대피소: ${item['REARE_NM']} (${item['LAT']}, ${item['LOT']})');
@@ -107,17 +146,38 @@ for (var item in items) {
         final lon = double.tryParse(item['LOT'] ?.toString() ?? '');
         final name = item['REARE_NM'] ?? '이름 없음';
         final address = item['RONA_DADDR'] ?? '주소 없음';
+        final typeCode=item['SHLT_SE_CD']??'';
 
 
 //대피소이름은 잘 출력되고 있는 상태
 
         if (lat == null || lon == null) return null;
 
+//대피소 유형별 색상 지정
+double markerColor;
+  switch (typeCode) {
+    case '1':
+      markerColor = BitmapDescriptor.hueAzure; // 한파쉼터
+      break;
+    case '2':
+      markerColor = BitmapDescriptor.hueOrange; // 무더위쉼터
+      break;
+    case '3':
+      markerColor = BitmapDescriptor.hueYellow; // 지진옥외대피소
+      break;
+    case '4':
+      markerColor = BitmapDescriptor.hueViolet; // 지진해일긴급대피소
+      break;
+    default:
+      markerColor = BitmapDescriptor.hueGreen; // 기본 색
+  }
+
+
         return Marker(
           markerId: MarkerId(item['MNG_SN'] ?? UniqueKey().toString()),
           position: LatLng(lat, lon),
           infoWindow: InfoWindow(title: name, snippet: address), 
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+          icon: BitmapDescriptor.defaultMarkerWithHue(markerColor),
         );
       }).whereType<Marker>().toList();
     }
@@ -182,7 +242,7 @@ for (var item in items) {
      
     
       //현재위치 기반 대피소 마커 받기
-       final shelterMarkers=await fetchShelterMarkers(latLng);
+       final shelterMarkers=await fetchShelterMarkers(latLng,_selectedShelterCode);
     
 
 //여기서 부터 제대로 안뜸 => 위치 불러오기 오류: NoSuchMethodError: The Method '[]' was called on null 오류 발생
@@ -275,6 +335,68 @@ for (var item in items) {
     ..add(myLocationMarker)
     ..addAll(_ShelterMarkers); //대피소 마커 추가
 
+//드롭바 추가하기 위해 잠깐 주석처리
+
+return Scaffold(
+      appBar: AppBar(
+        title: const Text('대피소 지도', style: TextStyle(color: Colors.black)),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      body: Column(
+        children: [
+          // ✅ 드롭다운 위젯
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: DropdownButton<String>(
+              value: _selectedShelterCode,
+              isExpanded: true,
+              items: shelterTypes.entries.map((entry) {
+                return DropdownMenuItem<String>(
+                  value: entry.value,
+                  child: Text(entry.key),
+                );
+              }).toList(),
+              onChanged: (value) async{
+                setState(() {
+                  _selectedShelterCode = value ?? '';
+                  _isLoading = true;
+                });
+                //추가한 부분
+             
+              if (_currentPosition != null) {
+                  final markers = await fetchShelterMarkers(_currentPosition!, _selectedShelterCode);
+                  setState(() {
+                     _ShelterMarkers = markers.toSet();
+                     _isLoading = false;
+                            });
+                    }
+               
+                _fetchCurrentLocation(); // 선택값 변경 시 재호출
+              },
+            ),
+          ),
+          // ✅ 지도
+          Expanded(
+            child: GoogleMap(
+              onMapCreated: (controller) {
+                _mapController = controller;
+              },
+              initialCameraPosition: CameraPosition(
+                target: _currentPosition!,
+                zoom: 14,
+              ),
+              markers: allMarkers,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: true,
+            ),
+          ),
+        ],
+      ),
+);
+
+/*
     return Scaffold(
       appBar: AppBar(
         title: const Column(
@@ -307,5 +429,7 @@ for (var item in items) {
         markers: allMarkers,
             ),
     );
+
+    */
   }
 }
