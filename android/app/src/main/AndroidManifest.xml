@@ -2,10 +2,21 @@
     android:label="formydisaster"
     package="com.example.formydisaster"
     >
+    <!-- Location permissions for geolocator -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!--Google Maps -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+   
+
     <application
         android:label="formydisaster"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+         <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCt2betPDFp_wAdR8cg-CM0Bo3-6FEUMB8" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
