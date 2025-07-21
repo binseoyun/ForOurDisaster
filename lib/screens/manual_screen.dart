@@ -3,7 +3,7 @@ import 'package:formydisaster/screens/disaster_details/earthquake_detail.dart';
 import 'package:formydisaster/screens/disaster_details/flooded_detail.dart';
 import 'package:formydisaster/screens/disaster_details/snow_detail.dart';
 //각 disaster_detail.dart이 폴더내용을 import 해서 onTap 연결
-import 'disaster_details/drought_details.dart'; //가뭄 연결
+//가뭄 연결
 import 'disaster_details/wind_detail.dart'; //강풍 연결
 
 class DisasterGuideScreen extends StatefulWidget {

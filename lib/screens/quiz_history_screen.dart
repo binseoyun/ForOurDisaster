@@ -102,7 +102,7 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // History Section
+                // 퀴즈 히스토리
                 const Text(
                   '퀴즈 히스토리',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -123,8 +123,8 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
                     itemBuilder: (context, index) {
                       final item = quizHistory[index];
                       final isCorrect = item['isCorrect'] as bool;
-                      final selected = item['selected'] as int;
-                      final correct = item['correct'] as int;
+                      final selected = item['selected'] as int? ?? 0; // Handle null by providing a default of 0
+                      final correct = item['correct'] as int? ?? 0; // Handle null by providing a default of 0
 
                       return Card(
                         elevation: 1,
