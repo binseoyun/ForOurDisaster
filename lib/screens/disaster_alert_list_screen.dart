@@ -19,9 +19,33 @@ class _DisasterAlertListScreenState extends State<DisasterAlertListScreen> {
   bool isLoading = true;
   String? errorMessage;
 
+  final List<String> regions = [
+    '서울특별시',
+    '부산광역시',
+    '대구광역시',
+    '인천광역시',
+    '광주광역시',
+    '대전광역시',
+    '울산광역시',
+    '세종특별자치시',
+    '경기도',
+    '강원도',
+    '충청북도',
+    '충청남도',
+    '전라북도',
+    '전라남도',
+    '경상북도',
+    '경상남도',
+    '제주특별자치도',
+  ];
+
+  String selectedRegion = '서울특별시'; // 기본 선택 지역
+
   @override
   void initState() {
     super.initState();
+
+    selectedRegion = widget.initialRegion ?? '서울특별시'; // 한 번만 초기화
     _loadAlerts();
   }
 
@@ -31,21 +55,12 @@ class _DisasterAlertListScreenState extends State<DisasterAlertListScreen> {
       errorMessage = null;
     });
 
-    try { 
-      String regionToUse = widget.initialRegion ?? '';
-      print('Initial region from widget: ${widget.initialRegion}');
+    try {
+      String regionToUse = selectedRegion; // 여기로
+      print('Using region: $regionToUse');
 
-      if (regionToUse.isEmpty || regionToUse == 'Unknown') {
-        regionToUse = '서울특별시';
-        print('지역명이 Unknown이거나 비어있어 기본 지역인 서울특별시로 설정합니다');
-      } else {
-        print('Using region: $regionToUse');
-      }
-
-      print('Calling fetchAllAlerts with region: $regionToUse');
       final rawAlerts = await _disasterService.fetchAllAlerts(
         region: regionToUse,
-        // crtDt 파라미터 제거 - 날짜 상관없이 최신순으로 모든 재난문자 조회
       );
 
       setState(() {
@@ -64,8 +79,17 @@ class _DisasterAlertListScreenState extends State<DisasterAlertListScreen> {
   Widget _buildAlertItem(DisasterAlert alert) {
     return ListTile(
       title: Text(alert.emrgStepNm),
-      subtitle: Text(alert.msgCn),
-      trailing: Text(alert.formattedTime),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(alert.msgCn),
+          SizedBox(height: 4),
+          Text(
+            alert.formattedTime,
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          ),
+        ],
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     );
   }
@@ -73,19 +97,49 @@ class _DisasterAlertListScreenState extends State<DisasterAlertListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(title: const Text("긴급 재난 문자")),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : errorMessage != null
-              ? Center(child: Text('오류 발생: $errorMessage'))
-              : alerts.isEmpty
-                  ? const Center(child: Text("표시할 재난 문자가 없습니다."))
-                  : ListView.builder(
-                      itemCount: alerts.length,
-                      itemBuilder: (context, index) {
-                        return _buildAlertItem(alerts[index]);
-                      },
-                    ),
+          ? Center(child: Text('오류 발생: $errorMessage'))
+          : Column(
+              children: [
+                // ① 상단 드롭다운
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: DropdownButton<String>(
+                    value: selectedRegion,
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          selectedRegion = value;
+                        });
+                        _loadAlerts(); // 선택된 지역 기준으로 데이터 다시 불러오기
+                      }
+                    },
+                    items: regions.map((region) {
+                      return DropdownMenuItem<String>(
+                        value: region,
+                        child: Text(region),
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                // ② 리스트 영역은 Expanded로 감싸기
+                Expanded(
+                  child: alerts.isEmpty
+                      ? const Center(child: Text("표시할 재난 문자가 없습니다."))
+                      : ListView.builder(
+                          itemCount: alerts.length,
+                          itemBuilder: (context, index) {
+                            return _buildAlertItem(alerts[index]);
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }
