@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http; //공공 데이터 API 호출 함수 만들기 위해 추가한 2개 import
+import 'dart:convert';
 
 //현재 내 위치 기반으로는 뜨게 가능
 //친구 실시간 위치 띄우기 구현 - 확인 필요
@@ -11,11 +13,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 //4.지도에 마커로 표시
 
 
-//현재 내 위치 띄우기 완료 => 내 위치를 기반으로 대피소 위치를 띄우게 해야함
-//1.현재 위치 가져와서 => 구현 완료
-//2.좌표 범위 계산(현재 위치 기준으로)
-//3.API 요청 URL 구성해서 대피소 데이터 가져오기
-//4.지도에 대피소 마커 표시
+
 
 
 class ShelterMapScreen extends StatefulWidget {
@@ -32,12 +30,79 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
   bool _isLoading = true;
 
   Set<Marker> _friendMarkers = {};
+  Set<Marker> _ShelterMarkers={}; //대피소 마커
 
   @override
   void initState() {
     super.initState();
     _fetchCurrentLocation();
   }
+
+  //지도에 대피소 api에서 받아온 정보를 띄우는 흐름
+  //1.현재 위치를 가져옴(_fetchCurrentLoation()안에서 Geolocator.getCurrentPosition()호출)
+  //2.대피소 API 호출(fetchShelterMarkers(currentPostion) 호출해서 API에 요청보냄)
+  //3.API 응답 받아서 마커 생성 => 위도,경도 있는 항목들만 Markers로 변환
+  //4.지도에 표시할 마커 set해서 저장(_shelterMarkers= ..)
+  //5.build()에서 지도에 마커 표시(GoogleMap(markers:allMarkers)안에 포함됨)
+
+  //현재 위치 기반 대피소 데이터 가져오기
+
+  //공공데이터 API 호출 함수
+  Future<List<Marker>> fetchShelterMarkers(LatLng position) async{
+     const serviceKey='C6U74L503B938FO4';
+     const delta=0.05; //5km반경 이내의 대피소 위치 지정
+
+     final startLat=(position.latitude - delta).toStringAsFixed(6); //시작위도
+     final endLat=(position.latitude+delta).toStringAsFixed(6); //종료위도
+     final startLot=(position.longitude-delta).toStringAsFixed(6); //시작경도
+     final endLot=(position.longitude+delta).toStringAsFixed(6); //종료 경도
+
+     final url=Uri.parse(
+      'https://apis.data.go.kr/V2/api/DSSP-IF-10941'
+      '?serviceKey=$serviceKey'
+      '&returnType=json'
+      '&numOfRows=100'
+      '&pageNo=1'
+      '&startLat=$startLat'
+      '&endLat=$endLat'
+      '&startLot=$startLot'
+      '&endLot=$endLot'
+      '&shlt_se_cd=3', // 지진 옥외 대피장소 (필요시 변경)
+     );
+
+      final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final items = data['response']['body']['items'] as List<dynamic>?;
+
+      if (items == null) return [];
+
+      return items.map<Marker?>((item) {
+        final lat = double.tryParse(item['LAT'] ?? '');
+        final lon = double.tryParse(item['LOT'] ?? '');
+        final name = item['REARE_NM'] ?? '이름 없음';
+        final address = item['RONA_DADDR'] ?? '주소 없음';
+
+        if (lat == null || lon == null) return null;
+
+        return Marker(
+          markerId: MarkerId(item['MNG_SN'] ?? UniqueKey().toString()),
+          position: LatLng(lat, lon),
+          infoWindow: InfoWindow(title: name, snippet: address), 
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        );
+      }).whereType<Marker>().toList();
+    } else {
+      print('대피소 API 오류: ${response.statusCode}');
+      return [];
+    }
+
+
+  }
+
+
+
+
 
   Future<void> _fetchCurrentLocation() async {
     try {
@@ -79,9 +144,12 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
       );
       
       setState(() {
+        //지금 position에서 경도와 위도는 잘 호출한 상태
         _currentPosition = LatLng(position.latitude, position.longitude);
         _isLoading = false;
       });
+
+
     } catch (e) {
       print('위치 불러오기 오류: $e');
       setState(() {
@@ -92,6 +160,9 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
       });
     }
   }
+
+
+
 
   Future<void> _loadFriendLocations() async {
   final snapshot = await FirebaseFirestore.instance.collection('users').get();
@@ -149,7 +220,9 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
     );
 
      // 친구 마커와 내 위치 마커 합치기
-    final allMarkers = Set<Marker>.from(_friendMarkers)..add(myLocationMarker);
+    final allMarkers = Set<Marker>.from(_friendMarkers)
+    ..add(myLocationMarker)
+    ..addAll(_ShelterMarkers); //대피소 마커 추가
 
     return Scaffold(
       appBar: AppBar(
