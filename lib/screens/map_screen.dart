@@ -14,8 +14,6 @@ import 'dart:convert';
 
 
 
-
-
 class ShelterMapScreen extends StatefulWidget {
   const ShelterMapScreen({super.key});
 
@@ -50,7 +48,7 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
   //공공데이터 API 호출 함수
   Future<List<Marker>> fetchShelterMarkers(LatLng position) async{
      const serviceKey='C6U74L503B938FO4';
-     const delta=0.05; //5km반경 이내의 대피소 위치 지정
+     const delta=0.10; //10km반경 이내의 대피소 위치 지정
 
      final startLat=(position.latitude - delta).toStringAsFixed(6); //시작위도
      final endLat=(position.latitude+delta).toStringAsFixed(6); //종료위도
@@ -58,7 +56,7 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
      final endLot=(position.longitude+delta).toStringAsFixed(6); //종료 경도
 
      final url=Uri.parse(
-      'https://apis.data.go.kr/V2/api/DSSP-IF-10941'
+      'https://www.safetydata.go.kr/V2/api/DSSP-IF-10941'
       '?serviceKey=$serviceKey'
       '&returnType=json'
       '&numOfRows=100'
@@ -67,21 +65,51 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
       '&endLat=$endLat'
       '&startLot=$startLot'
       '&endLot=$endLot'
-      '&shlt_se_cd=3', // 지진 옥외 대피장소 (필요시 변경)
+      //나중에 대피소 별로 필터링 할 수 있게
+      //&shlt_se_cd=1 함파 쉼터
+      //&shlt_se_cd=2 무더위 쉼터
+      //&shlt_se_cd=3 지진옥외대피장소
+      //&shlt_se_cd=4 지진해일긴급대피장소
      );
+       
+       //API 요청 URL 확인
+       print('대피소 API 요청 URL: $url');
 
       final response = await http.get(url);
+      
+      //API 응답 상태 및 데이터 확인
+      print('대피소 API 응답 상태코드: ${response.statusCode}');
+      print('대피소 API 응답 본문: ${response.body}');
+
+
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final items = data['response']['body']['items'] as List<dynamic>?;
+      final items = data['body'] as List<dynamic>?;
 
-      if (items == null) return [];
+      
+
+      if (items == null) {
+        print('body가 null입니다!!!');
+        return [];
+      }
+      //각 대피소의 이름 확인
+for (var item in items) {
+  print('대피소: ${item['REARE_NM']} (${item['LAT']}, ${item['LOT']})');
+}
+
+  //파싱한 대피소 개수 확인
+      print('파싱된 대피소 개수: ${items?.length}');
+
 
       return items.map<Marker?>((item) {
-        final lat = double.tryParse(item['LAT'] ?? '');
-        final lon = double.tryParse(item['LOT'] ?? '');
+        final lat = double.tryParse(item['LAT'] ?.toString() ?? '');
+        final lon = double.tryParse(item['LOT'] ?.toString() ?? '');
         final name = item['REARE_NM'] ?? '이름 없음';
         final address = item['RONA_DADDR'] ?? '주소 없음';
+
+
+//대피소이름은 잘 출력되고 있는 상태
 
         if (lat == null || lon == null) return null;
 
@@ -92,7 +120,8 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
         );
       }).whereType<Marker>().toList();
-    } else {
+    }
+     else {
       print('대피소 API 오류: ${response.statusCode}');
       return [];
     }
@@ -142,10 +171,32 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 10),
       );
-      
+
+//위도:36.3678739, 경도:127.3651192에 잘뜸
+     print('현재 위치: 위도=${position.latitude}, 경도=${position.longitude}');
+
+
+      //현재 위도와 경도를 latLng에 저장
+      final latLng=LatLng(position.latitude,position.longitude);
+ 
+     
+    
+      //현재위치 기반 대피소 마커 받기
+       final shelterMarkers=await fetchShelterMarkers(latLng);
+    
+
+//여기서 부터 제대로 안뜸 => 위치 불러오기 오류: NoSuchMethodError: The Method '[]' was called on null 오류 발생
+
+       //마커가 제대로 생성되었는지 확인
+       print('생성된 마커 수: ${_ShelterMarkers.length}');
+      for (var marker in _ShelterMarkers) {
+        print('마커 위치: ${marker.position}, 제목: ${marker.infoWindow.title}');
+      }
+
+      //상태 업데이트(내위치 + 대피소 마커)
       setState(() {
-        //지금 position에서 경도와 위도는 잘 호출한 상태
-        _currentPosition = LatLng(position.latitude, position.longitude);
+        _currentPosition = latLng;
+        _ShelterMarkers=shelterMarkers.toSet();
         _isLoading = false;
       });
 
