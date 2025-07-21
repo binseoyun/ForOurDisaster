@@ -5,18 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http; //공공 데이터 API 호출 함수 만들기 위해 추가한 2개 import
 import 'dart:convert';
 
-//현재 내 위치 기반으로는 뜨게 가능
-//친구 실시간 위치 띄우기 구현 - 확인 필요
-//1.대피소 위치 api를 받아서 위도와 경도를 받아서 firestore에 저장 후 가져오기
-//2.geolocator 패키지의 Geolocator.distanceBetween() 매서드를 통해 현재 위치와 거리 계산
-//3.가까운 대피소만 필터링
-//4.지도에 마커로 표시
-
-//반경 10km 내 전체 대피소에 초록색+파란색 섞임
-//지진 옥외 대피장소에 노란색만
-//지진 해일 긴급 대피장소에 아무것도 안뜸
-//한파쉼터에 초록색+파란색 섞임
-//무더위 쉼터에 초록색만
+//친구 위치를 뜨게 수정
+//상단에서 친구 보기 버튼을 누르면 대피소 마커가 사라지고, 친구의 위치가 뜨게 설정
+//
 
 
 class ShelterMapScreen extends StatefulWidget {
@@ -227,7 +218,7 @@ double markerColor;
         timeLimit: const Duration(seconds: 10),
       );
 
-//위도:36.3678739, 경도:127.3651192에 잘뜸
+     //위도:36.3678739, 경도:127.3651192에 잘뜸
      print('현재 위치: 위도=${position.latitude}, 경도=${position.longitude}');
 
 
@@ -240,7 +231,7 @@ double markerColor;
        final shelterMarkers=await fetchShelterMarkers(latLng,_selectedShelterCode);
     
 
-//여기서 부터 제대로 안뜸 => 위치 불러오기 오류: NoSuchMethodError: The Method '[]' was called on null 오류 발생
+      //여기서 부터 제대로 안뜸 => 위치 불러오기 오류: NoSuchMethodError: The Method '[]' was called on null 오류 발생
 
        //마커가 제대로 생성되었는지 확인
        print('생성된 마커 수: ${_ShelterMarkers.length}');
