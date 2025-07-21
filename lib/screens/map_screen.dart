@@ -134,7 +134,7 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
 
       //각 대피소의 이름 확인
 for (var item in items) {
-  print('대피소: ${item['REARE_NM']} (${item['LAT']}, ${item['LOT']})');
+  print('대피소: ${item['REARE_NM']} (${item['LAT']}, ${item['LOT']} , ${item['SHLT_SE_CD']})');
 }
 
   //파싱한 대피소 개수 확인
@@ -156,6 +156,7 @@ for (var item in items) {
 //대피소 유형별 색상 지정
 double markerColor;
   switch (typeCode) {
+    
     case '1':
       markerColor = BitmapDescriptor.hueAzure; // 한파쉼터
       break;
