@@ -154,18 +154,18 @@ class LandslideDetail extends StatelessWidget {
 
                   sectionTitle("상세행동요령"),
                   detailCard(
-                    icon: Icons.directions_bus,
+                    icon: Icons.home,
                     title: "집(산지 인접 주택,건물)",
                     desc: "토사 유입의 우려가 있는 경우 지하주차장으로 접근을 자제합니다. 대피 이동 중에는 고압전선 인근으로의 접근을 자제합니다.",
                   ),
                   detailCard(
-                    icon: Icons.directions_walk_sharp,
+                    icon: Icons.park,
                     title: "아영(캠핑) 중",
                     desc: "아영(캠핑)을 멈추고, 마을 회관 등 안전한 곳으로 이동합니다. 대피장소로 이동하기 위해 하천·계류 등을 건너야 할 경우 무리하지 말고, 계곡에서 떨어진 높은 언덕에서 구조를 요청합니다.",
                   ),
 
                  detailCard(
-                  icon: Icons.directions_walk,
+                  icon: Icons.terrain,
                   title: "산행 중", 
                   desc: "산사태는 상부에서 하부로 발생하므로 대피할 때 산사태 방향과 멀어지는 방향의 가장 가까운 높은 곳으로 대피합니다.",
                   )

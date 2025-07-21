@@ -153,18 +153,18 @@ class FloodedDetailPage extends StatelessWidget {
 
                   sectionTitle("상세행동요령"),
                   detailCard(
-                    icon: Icons.directions_railway,
+                    icon: Icons.directions_walk,
                     title: "보행자",
                     desc: "하수도, 맨홀 근처는 추락으로 인한 휩쓸림 사고가 발생할 수 있으므로 접근을 금지합니다.",
                   ),
                   detailCard(
-                    icon: Icons.directions_walk_sharp,
+                    icon: Icons.stairs,
                     title: "지하 공간 이용자",
                     desc: "물이 집 안으로 들어오고 있는 상황이라면 출입문부터 개방합니다.",
                   ),
 
                  detailCard(
-                  icon: Icons.directions_walk,
+                  icon: Icons.directions_car,
                   title: "차량 이용자", 
                   desc: "차량이 침수된 상황에서 외부 수압으로 문이 열리지 않을 때는 좌석 목받침 하단 철재봉을 이용하여 유리창을 깨서 대피합니다.",
       

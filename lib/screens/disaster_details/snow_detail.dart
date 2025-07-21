@@ -153,12 +153,12 @@ class SnowDetailPage extends StatelessWidget {
 
                   sectionTitle("상세행동요령"),
                   detailCard(
-                    icon: Icons.directions_bus,
+                    icon: Icons.directions_subway,
                     title: "일반가정",
                     desc: "출·퇴근을 평소보다 조금 일찍하고, 자가용 대신 지하철,버스 등 대중교통을 이용하세요",
                   ),
                   detailCard(
-                    icon: Icons.directions_car,
+                    icon: Icons.car_repair,
                     title: "차량 이용자",
                     desc: "부득이 차량을 이용할 경우에는 반드시 자동차 월동용품(스노체인(스프레이 체인), 모래주머니, 염화칼슘, 삽 등)을 휴대합니다.",
                   ),

@@ -168,18 +168,18 @@ const EarthquakeDetailPage({super.key});
 
                   sectionTitle("상세행동요령"),
                   detailCard(
-                    icon: Icons.directions_railway,
+                    icon: Icons.home,
                     title: "집안에 있을 경우",
                     desc: "탁자 아래로 들어가 몸을 보호합니다. 흔들림이 멈추면 전기와 가스를 차단하고 문을 열어 출구를 확보한 후,밖으로 나갑니다.",
                   ),
                   detailCard(
-                    icon: Icons.directions_walk_sharp,
+                    icon: Icons.elevator,
                     title: "앨리베이터에 있는 경우",
                     desc: "모든 층의 버튼을 눌러 가장 먼저 열리는 층에서 내린 후 계단을 이용합니다.",
                   ),
 
                  detailCard(
-                  icon: Icons.directions_walk,
+                  icon: Icons.car_crash,
                   title: "운전을 하고 있는 경우", 
                   desc: "비상등을 켜고 서서히 속도를 줄여 도로 오른쪽에 차를 세우고, 라디오의 정보를 잘 들으면서 키를 꽂아 두고 대피합니다.",
       

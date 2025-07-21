@@ -152,18 +152,18 @@ class WindDetailPage extends StatelessWidget {
 
                   sectionTitle("상세행동요령"),
                   detailCard(
-                    icon: Icons.directions_bus,
+                    icon: Icons.block,
                     title: "위험 지역 접근 금지",
                     desc: "침수된 도로, 지하차도, 교량,산간,계곡,하천변,해안가,공사장,가로등,신호등,전신주,지하공간 등 위험지역에는 절대 접근하지 않도록 합니다.",
                   ),
                   detailCard(
-                    icon: Icons.directions_car,
+                    icon: Icons.sensor_window,
                     title: "건물,집안",
                     desc: "건물의 출입문, 창문은 닫아서 파손되지 않도록 하고, 창문이나 유리문에서 되도록 떨어져 있도록 합니다.",
                   ),
 
                   detailCard(
-                    icon: Icons.directions_off, 
+                    icon: Icons.cloud, 
                     title: "실외", 
                     desc: "운전에 주의하고, 작업 등 야외활동을 중단하고 즉시 실내로 이동합니다."
                     ),

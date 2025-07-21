@@ -152,18 +152,18 @@ class HeavyrainDetailPage extends StatelessWidget {
 
                   sectionTitle("상세행동요령"),
                   detailCard(
-                    icon: Icons.directions_bus,
+                    icon: Icons.waves,
                     title: "하천급류",
                     desc: "호우,태풍 등으로 하천 수위가 높아지는 경우 하천 주변에 접근하지 않습니다.",
                   ),
                   detailCard(
-                    icon: Icons.directions_car,
+                    icon: Icons.car_crash,
                     title: "차량 침수",
                     desc: "조금이라도 침수된 지하 차도와 도로는 절대 지나가지 않습니다.",
                   ),
 
                   detailCard(
-                    icon: Icons.directions_off, 
+                    icon: Icons.bolt, 
                     title: "낙뢰", 
                     desc: "번개를 본 후 30초 이내에 천둥소리를 들었다면 신속히 안전한 장소로 대피하여  \n즉시 몸을 낮추고, 물이 없는 움푹 파일 곳이나 동굴 안으로 대피합니다"
                     ),

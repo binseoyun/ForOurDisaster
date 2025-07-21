@@ -163,18 +163,18 @@ class ExtremehotDetailPage extends StatelessWidget {
 
                   sectionTitle("상세행동요령"),
                   detailCard(
-                    icon: Icons.directions_bus,
+                    icon: Icons.wb_sunny,
                     title: "일반 가정에서",
                     desc: "야외활동을 최대한 자제하고, 외출이 꼭 필요한 경우에는 창이 넓은 모자와 가벼운 옷차림을 하고 물병을 반드시 휴대합니다.",
                   ),
                   detailCard(
-                    icon: Icons.directions_car,
+                    icon: Icons.work,
                     title: "직장에서",
                     desc: "점심시간 등을 이용하여 10~15분 정도의 낮잠으로 개인 건강을 유지합니다.",
                   ),
 
                   detailCard(
-                    icon: Icons.directions_off, 
+                    icon: Icons.school, 
                     title: "학교에서", 
                     desc: "초·중·고등학교에서 에어컨 등 냉방장치 운영이 곤란한 경우에는 단축수업, 휴교 등 학사일정 조정을 검토하고, 식중독 사고가 발생하지 않도록 주의합니다."
                     ),
