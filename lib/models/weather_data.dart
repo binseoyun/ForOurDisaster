@@ -28,23 +28,25 @@ class WeatherData {
   });
 
   factory WeatherData.fromJson(Map<String, dynamic> json) {
-    // Safely convert Kelvin to Celsius, providing a default for null inputs
-    double kelvinToCelsius(double? kelvin) => (kelvin ?? 273.15) - 273.15;
 
     // Safely access nested maps and lists, providing empty fallbacks
     final current = json['current'] as Map<String, dynamic>? ?? {};
-    
+
     final weatherList = current['weather'] as List<dynamic>?;
     final currentWeather = weatherList != null && weatherList.isNotEmpty
         ? weatherList.first as Map<String, dynamic>? ?? {}
         : {};
 
     final dailyList = json['daily'] as List<dynamic>? ?? [];
-    final daily = dailyList.isNotEmpty ? dailyList.first as Map<String, dynamic>? ?? {} : {};
+    final daily = dailyList.isNotEmpty
+        ? dailyList.first as Map<String, dynamic>? ?? {}
+        : {};
     final dailyTemp = daily['temp'] as Map<String, dynamic>? ?? {};
 
     final hourlyList = json['hourly'] as List<dynamic>? ?? [];
-    final firstHour = hourlyList.isNotEmpty ? hourlyList.first as Map<String, dynamic>? ?? {} : {};
+    final firstHour = hourlyList.isNotEmpty
+        ? hourlyList.first as Map<String, dynamic>? ?? {}
+        : {};
 
     // Determine precipitation type safely
     String pType = 'None';
@@ -60,9 +62,9 @@ class WeatherData {
       iconCode: currentWeather['icon'] as String? ?? '01d',
       cloudiness: current['clouds'] as int? ?? 0,
       locationName: json['name'] as String? ?? 'Unknown Location',
-      tempCurrent: kelvinToCelsius((current['temp'] as num?)?.toDouble()),
-      tempHigh: kelvinToCelsius((dailyTemp['max'] as num?)?.toDouble()),
-      tempLow: kelvinToCelsius((dailyTemp['min'] as num?)?.toDouble()),
+      tempCurrent: (current['temp'] as num?)?.toDouble() ?? 0.0,
+      tempHigh: (dailyTemp['max'] as num?)?.toDouble() ?? 0.0,
+      tempLow: (dailyTemp['min'] as num?)?.toDouble() ?? 0.0,
       precipitationProbablity: (firstHour['pop'] as num?)?.toDouble() ?? 0.0,
       precipitationType: pType,
       uvi: (current['uvi'] as num?)?.toDouble() ?? 0.0,

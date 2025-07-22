@@ -8,7 +8,6 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
-
 class CallScreen extends StatefulWidget {
   //StatefulWidget으로 정의하여, 연락처 추가/삭제 시 UI 업데이트
   const CallScreen({super.key});
@@ -66,7 +65,7 @@ class _CallScreenState extends State<CallScreen> {
 
     final nameController = TextEditingController(); //이름관련
     final numberController = TextEditingController(); //전화번호 관련
-    final emailController=TextEditingController(); //이메일 관련
+    final emailController = TextEditingController(); //이메일 관련
 
     showDialog(
       context: context,
@@ -90,7 +89,6 @@ class _CallScreenState extends State<CallScreen> {
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(hintText: "이메일 입력"),
             ),
-
           ],
         ),
         actions: [
@@ -99,88 +97,91 @@ class _CallScreenState extends State<CallScreen> {
             child: const Text("취소"),
           ),
           ElevatedButton(
-            onPressed: () async{
+            onPressed: () async {
               final name = nameController.text.trim();
               final number = numberController.text.trim();
-              final email=emailController.text.trim();
+              final email = emailController.text.trim();
 
-            if (name.isNotEmpty && number.isNotEmpty && email.isNotEmpty) {
-           // ✅ 먼저 로컬에 추가
-            setState(() {
-            addedContacts.add({'name': name, 'number': number, 'email': email});
-             });
-           await saveContacts();
+              if (name.isNotEmpty && number.isNotEmpty && email.isNotEmpty) {
+                // ✅ 먼저 로컬에 추가
+                setState(() {
+                  addedContacts.add({
+                    'name': name,
+                    'number': number,
+                    'email': email,
+                  });
+                });
+                await saveContacts();
 
-           // ✅ Firestore에 저장
-          final user = FirebaseAuth.instance.currentUser;
-          if(user==null){
-             print("로그인이 안 된 상태입니다.");
-             return ;
-             }
-      
-         try{
-            await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('emergencyEmails')
-            .add({
-          'name': name,
-          'email': email,
-          'number' :number,
-          'timestamp': FieldValue.serverTimestamp(),
-          });
-          print("Firestore 저장 성공!");
-       }catch(e){
-          print("Firestore 저장 실패:$e");
-       }
+                // ✅ Firestore에 저장
+                final user = FirebaseAuth.instance.currentUser;
+                if (user == null) {
+                  print("로그인이 안 된 상태입니다.");
+                  return;
+                }
 
-      // ✅ 동의 여부 확인 (단, 알림은 동의했을 때만)
-      final agreed = await showDialog<bool>(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("위치 공유 요청"),
-          content: const Text("위급상황 시 내 위치를 상대방에게 표시되게 하시겠습니까?"),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("취소")),
-            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("동의")),
-          ],
-        ),
-      );
+                try {
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user.uid)
+                      .collection('emergencyEmails')
+                      .add({
+                        'name': name,
+                        'email': email,
+                        'number': number,
+                        'timestamp': FieldValue.serverTimestamp(),
+                      });
+                  print("Firestore 저장 성공!");
+                } catch (e) {
+                  print("Firestore 저장 실패:$e");
+                }
 
-      if (agreed == true) {
-        // TODO: 이 이메일을 Firestore에서 사용자 찾고 → FCM 푸시 알림 전송
-        print("🔔 위치 공유 요청 푸시 알림을 보냅니다.");
+                // ✅ 동의 여부 확인 (단, 알림은 동의했을 때만)
+                final agreed = await showDialog<bool>(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: const Text("위치 공유 요청"),
+                    content: const Text("위급상황 시 내 위치를 상대방에게 표시되게 하시겠습니까?"),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text("취소"),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text("동의"),
+                      ),
+                    ],
+                  ),
+                );
 
-        try{
-          final HttpsCallable callable=FirebaseFunctions.instance.httpsCallable('sendLocationRequest');
-          print(FirebaseAuth.instance.currentUser?.uid);
-          final result = await callable.call(<String, dynamic>{
-      'email': email, // 사용자가 입력한 친구 이메일
-      'name': name,   // 이름도 함께 전달해도 좋음
-      'number': number, // 선택사항
-    });
-        print('📨 푸시 알림 결과: ${result.data}');
-        }
-        catch(e){
-          print('Cloud Function 호출 실패:$e');
-        }
-      } else {
-        print("🙅 위치 공유 요청은 하지 않았습니다.");
-      }
+                if (agreed == true) {
+                  // TODO: 이 이메일을 Firestore에서 사용자 찾고 → FCM 푸시 알림 전송
+                  print("🔔 위치 공유 요청 푸시 알림을 보냅니다.");
 
-      // ✅ 마지막으로 다이얼로그 닫기
-      Navigator.pop(context);
-    }
-  },
-  child: const Text("추가"),
-),
+                  try {
+                    final HttpsCallable callable = FirebaseFunctions.instance
+                        .httpsCallable('sendLocationRequest');
+                    print(FirebaseAuth.instance.currentUser?.uid);
+                    final result = await callable.call(<String, dynamic>{
+                      'email': email, // 사용자가 입력한 친구 이메일
+                      'name': name, // 이름도 함께 전달해도 좋음
+                      'number': number, // 선택사항
+                    });
+                    print('📨 푸시 알림 결과: ${result.data}');
+                  } catch (e) {
+                    print('Cloud Function 호출 실패:$e');
+                  }
+                } else {
+                  print("🙅 위치 공유 요청은 하지 않았습니다.");
+                }
 
-              
-  
-      
-                
-              
-             
+                // ✅ 마지막으로 다이얼로그 닫기
+                Navigator.pop(context);
+              }
+            },
+            child: const Text("추가"),
+          ),
         ],
       ),
     );
@@ -352,7 +353,10 @@ class _CallScreenState extends State<CallScreen> {
                   } else {
                     return Container(
                       margin: const EdgeInsets.symmetric(vertical: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(20),
@@ -391,9 +395,24 @@ class _CallScreenState extends State<CallScreen> {
               mainAxisSpacing: 12,
               childAspectRatio: 1.3, // 버튼 비율 조정
               children: [
-                buildMiniButton('긴급 신호 전화', '112', Icons.gavel, Colors.pink.shade100),
-                buildMiniButton('민원/상담 전화', '110', Icons.sos, Colors.yellow.shade100),
-                buildMiniButton('화재/구급', '119', Icons.local_fire_department, Colors.green.shade100),
+                buildMiniButton(
+                  '긴급 신호 전화',
+                  '112',
+                  Icons.gavel,
+                  Colors.pink.shade100,
+                ),
+                buildMiniButton(
+                  '민원/상담 전화',
+                  '110',
+                  Icons.sos,
+                  Colors.yellow.shade100,
+                ),
+                buildMiniButton(
+                  '화재/구급',
+                  '119',
+                  Icons.local_fire_department,
+                  Colors.green.shade100,
+                ),
               ],
             ),
             const SizedBox(height: 40),
@@ -402,7 +421,10 @@ class _CallScreenState extends State<CallScreen> {
               child: ElevatedButton(
                 onPressed: () async {
                   await FirebaseAuth.instance.signOut();
-                  Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/login',
+                    (Route<dynamic> route) => false,
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE7F0E5),
@@ -415,10 +437,7 @@ class _CallScreenState extends State<CallScreen> {
                 ),
                 child: const Text(
                   'Sign Out',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),

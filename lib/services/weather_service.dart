@@ -10,7 +10,7 @@ class WeatherService {
   Future<Map<String, dynamic>> fetchWeather(double lat, double lon) async {
     final response = await http.get(
       Uri.parse(
-        '$_baseUrl?lat=$lat&lon=$lon&exclude=minutely,alerts&appid=$_apiKey',
+        '$_baseUrl?lat=$lat&lon=$lon&appid=$_apiKey&units=metric&lang=kr',
       ),
     );
 
