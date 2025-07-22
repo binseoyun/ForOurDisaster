@@ -106,9 +106,9 @@ class _CallScreenState extends State<CallScreen> {
                 // ✅ 먼저 로컬에 추가
                 setState(() {
                   addedContacts.add({
-                    'name': name,
+                    'senderName': name,
                     'number': number,
-                    'email': email,
+                    'targetEmail': email,
                   });
                 });
                 await saveContacts();
@@ -126,8 +126,8 @@ class _CallScreenState extends State<CallScreen> {
                       .doc(user.uid)
                       .collection('emergencyEmails')
                       .add({
-                        'name': name,
-                        'email': email,
+                        'senderName': name,
+                        'targetEmail': email,
                         'number': number,
                         'timestamp': FieldValue.serverTimestamp(),
                       });
@@ -164,15 +164,17 @@ class _CallScreenState extends State<CallScreen> {
                         .httpsCallable('sendLocationRequest');
                     print(FirebaseAuth.instance.currentUser?.uid);
                     final result = await callable.call(<String, dynamic>{
-                      'email': email, // 사용자가 입력한 친구 이메일
-                      'name': name, // 이름도 함께 전달해도 좋음
+                      'targetEmail': email, // 사용자가 입력한 친구 이메일
+                      'senderName': name, // 이름도 함께 전달해도 좋음
                       'number': number, // 선택사항
                     });
                     print('📨 푸시 알림 결과: ${result.data}');
-                  } catch (e) {
+                  } 
+                   catch (e) {
                     print('Cloud Function 호출 실패:$e');
                   }
-                } else {
+                } 
+                else {
                   print("🙅 위치 공유 요청은 하지 않았습니다.");
                 }
 
@@ -216,7 +218,7 @@ class _CallScreenState extends State<CallScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    contact['name']!,
+                    contact['senderName']!,
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
