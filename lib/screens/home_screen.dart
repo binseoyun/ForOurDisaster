@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
@@ -11,14 +10,14 @@ import '../services/weather_service.dart';
 import '../widgets/weather_section.dart';
 import '../widgets/quiz_section.dart';
 import '../widgets/disaster_alert_section.dart';
-import '../models/disaster_alert.dart';
-import '../services/disaster_service.dart';
+import '../models/firestore_alert.dart';
 
 import 'alarm_screen.dart';
 import 'chatbot_screen.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-
+import '../models/disaster_alert.dart'; // Added import for DisasterAlert
+import '../services/disaster_service.dart'; // Added import for DisasterService
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,10 +32,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
   String? errorMessage;
   final WeatherService _weatherService = WeatherService();
-  final DisasterService _disasterService = DisasterService();
-
-  //재난 문자 멤버 변수 추가
-  List<DisasterAlert> latestAlerts = [];
+  // 재난 문자 멤버 변수 변경 (FirestoreAlert 사용)
+  List<FirestoreAlert> latestAlerts = [];
 
   String cityName = 'Unknown';
   String? _administrativeArea; // 시도 (e.g. 서울특별시)
@@ -61,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    //fcm 토큰 관련 
+    //fcm 토큰 관련
     saveFcmTokenToFirestore(); //홈화면 오면 토큰을 저장하게 함수 호출
     _fetchWeatherData(); // This will now trigger _fetchDisasterAlerts internally
 
@@ -132,6 +129,31 @@ class _HomeScreenState extends State<HomeScreen> {
         cityName = 'Location Unavailable'; // Fallback if geocoding fails
       }
 
+      // 현재 위치 정보를 Firestore의 'regions' 필드에 저장
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null && (_administrativeArea != null || _locality != null)) {
+        final List<String> regionsToSave = [];
+        if (_administrativeArea != null && _administrativeArea!.isNotEmpty) {
+          regionsToSave.add(_administrativeArea!);
+        }
+        if (_locality != null && _locality!.isNotEmpty) {
+          regionsToSave.add(_locality!);
+        }
+        // 중복 제거 및 빈 값 제거
+        final uniqueRegions = regionsToSave
+            .where((r) => r.isNotEmpty)
+            .toSet()
+            .toList();
+
+        if (uniqueRegions.isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set({'regions': uniqueRegions}, SetOptions(merge: true));
+          print('Firestore에 사용자 지역 정보 저장: $uniqueRegions');
+        }
+      }
+
       final weatherJson = await _weatherService.fetchWeather(
         position.latitude,
         position.longitude,
@@ -145,11 +167,32 @@ class _HomeScreenState extends State<HomeScreen> {
         isLoading = false;
       });
 
-      // 현재 날짜를 YYYYMMDD 형식으로 가져오기
+      // === 재난문자 API에서 받아온 리스트를 Firestore에 자동 저장 ===
       final String currentDate = DateFormat('yyyyMMdd').format(DateTime.now());
+      final disasterService = DisasterService();
+      final List<Map<String, dynamic>> disasterAlertsFromApi =
+          await disasterService.fetchLatestAlerts(
+        region: _administrativeArea,
+        crtDt: currentDate,
+      );
+      for (final alert in disasterAlertsFromApi) {
+        final disasterAlert = DisasterAlert.fromJson(alert);
+        await saveDisasterAlertToFirestore(
+          region: disasterAlert.rcptnRgnNm.isNotEmpty
+              ? disasterAlert.rcptnRgnNm
+              : (_administrativeArea ?? 'Unknown'),
+          title: disasterAlert.emrgStepNm.isNotEmpty
+              ? disasterAlert.emrgStepNm
+              : '긴급재난문자',
+          body: disasterAlert.msgCn,
+          timestamp: DateTime.tryParse(disasterAlert.crtDt) ?? DateTime.now(),
+        );
+      }
+      // === Firestore 저장 끝 ===
 
+      // 현재 날짜를 YYYYMMDD 형식으로 가져오기
       // Call disaster alerts fetch AFTER weather data and city name are resolved
-      _fetchDisasterAlerts(currentDate);
+      _fetchDisasterAlerts(); // currentDate 인자 제거
     } catch (e, stackTrace) {
       print('Error fetching weather data: $e');
       print('Stack trace: $stackTrace');
@@ -160,56 +203,70 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  //재난 문자 API 불러오기
-  Future<void> _fetchDisasterAlerts(String? currentDate) async {
+  // Firestore에서 해당 지역의 최근 재난 알림 3개 불러오기 (공개 컬렉션)
+  Future<void> _fetchDisasterAlerts() async {
     try {
-      String regionNameForDisaster;
-
-      // 지역명 결정
-      if (_locality != null &&
-          _locality!.isNotEmpty &&
-          _locality != 'Unknown') {
-        // 시군구가 유효하면 '시도 시군구' 형태로 조합
-        regionNameForDisaster = '${_administrativeArea ?? ''} $_locality'
-            .trim();
-      } else if (_administrativeArea != null &&
-          _administrativeArea!.isNotEmpty &&
-          _administrativeArea != 'Unknown') {
-        // 시도만 유효하면 시도만 사용
-        regionNameForDisaster = _administrativeArea!;
-      } else {
-        // 둘 다 유효하지 않으면 '서울특별시'를 기본으로 사용
-        regionNameForDisaster = '서울특별시';
-        print('지역명이 Unknown이거나 비어있어 기본 지역인 서울특별시로 설정합니다');
+      // 현재 지역명 구하기 (예: '대전광역시')
+      final String? currentRegion = _administrativeArea;
+      if (currentRegion == null || currentRegion.isEmpty) {
+        print('현재 지역 정보가 없습니다.');
+        setState(() {
+          latestAlerts = [];
+        });
+        return;
       }
 
-      // currentDate가 null이면 현재 날짜로 폴백
-      final String finalCrtDt =
-          currentDate ?? DateFormat('yyyyMMdd').format(DateTime.now());
+      // Firestore에서 해당 지역의 최근 재난알림 3개 쿼리
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('disaster_alerts')
+          .where('region', isEqualTo: currentRegion)
+          .orderBy('timestamp', descending: true)
+          .limit(3)
+          .get();
 
-      print(
-        'Fetching disaster alerts for region: $regionNameForDisaster with date: $finalCrtDt',
-      );
-      final rawAlerts = await _disasterService.fetchLatestAlerts(
-        region: regionNameForDisaster,
-        crtDt: finalCrtDt,
-      );
-      print('Received ${rawAlerts.length} raw alerts from API.');
-
-      final alerts = rawAlerts
-          .map((json) => DisasterAlert.fromJson(json))
+      final alerts = querySnapshot.docs
+          .map((doc) => FirestoreAlert.fromDoc(doc))
           .toList();
-      print('Parsed ${alerts.length} DisasterAlert objects.');
+
+      print('Fetched ${alerts.length} alerts for region: $currentRegion');
 
       setState(() {
         latestAlerts = alerts;
       });
     } catch (e) {
-      print('Error fetching disaster alerts: $e');
+      print('Error fetching disaster alerts from Firestore: $e');
       setState(() {
-        errorMessage = '재난 문자 불러오기 실패: ${e.toString()}';
+        errorMessage = '재난 문자 불러오기 실패:  ${e.toString()}';
       });
     }
+  }
+
+  // Firestore에 disaster_alerts 자동 저장 함수 (API 데이터 -> Firestore)
+  Future<void> saveDisasterAlertToFirestore({
+    required String region,
+    required String title,
+    required String body,
+    required DateTime timestamp,
+  }) async {
+    // 중복 방지: region, title, timestamp가 모두 같은 문서가 이미 있으면 저장하지 않음
+    final existing = await FirebaseFirestore.instance
+        .collection('disaster_alerts')
+        .where('region', isEqualTo: region)
+        .where('title', isEqualTo: title)
+        .where('timestamp', isEqualTo: Timestamp.fromDate(timestamp))
+        .limit(1)
+        .get();
+    if (existing.docs.isNotEmpty) {
+      print('이미 동일한 재난알림이 존재합니다. 저장하지 않음.');
+      return;
+    }
+    await FirebaseFirestore.instance.collection('disaster_alerts').add({
+      'region': region,
+      'title': title,
+      'body': body,
+      'timestamp': Timestamp.fromDate(timestamp),
+    });
+    print('Firestore에 재난알림 저장 완료: $region, $title, $timestamp');
   }
 
   String? _getNonEmptyString(String? value) {
@@ -218,25 +275,24 @@ class _HomeScreenState extends State<HomeScreen> {
         : null;
   }
 
-//FCM 토큰 관련
+  //FCM 토큰 관련
 
-Future<void> saveFcmTokenToFirestore() async {
+  Future<void> saveFcmTokenToFirestore() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
     final fcmToken = await FirebaseMessaging.instance.getToken();
     if (fcmToken == null) return;
 
-    final userDoc = FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final userDoc = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid);
 
     await userDoc.set({
       'email': user.email,
       'fcmToken': fcmToken,
     }, SetOptions(merge: true)); //기존 데이터 데이터 덮어쓰지 않세 mrege사용
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -317,22 +373,35 @@ Future<void> saveFcmTokenToFirestore() async {
 
                 const SizedBox(height: 20),
 
-                DisasterAlertSection(
-                  alerts: latestAlerts
-                      .map(
-                        (alert) => {
-                          'title': alert.emrgStepNm,
-                          'message': alert.msgCn,
-                          'time': alert.formattedTime, //"12:27 PM 형식"
-                        },
-                      )
-                      .toList(),
-                  region:
-                      _locality != null &&
-                          _locality!.isNotEmpty &&
-                          _locality != 'Unknown'
-                      ? '${_administrativeArea ?? ''} $_locality'.trim()
-                      : _administrativeArea ?? '서울특별시',
+                // 재난 알림 섹션
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AlarmScreen(),
+                      ),
+                    );
+                  },
+                  child: DisasterAlertSection(
+                    alerts: latestAlerts
+                        .map(
+                          (alert) => {
+                            'title': alert.title,
+                            'message': alert.body,
+                            'time': DateFormat(
+                              'h:mm a',
+                            ).format(alert.timestamp),
+                          },
+                        )
+                        .toList(),
+                    region:
+                        _locality != null &&
+                            _locality!.isNotEmpty &&
+                            _locality != 'Unknown'
+                        ? '${_administrativeArea ?? ''} $_locality'.trim()
+                        : _administrativeArea ?? '서울특별시',
+                  ),
                 ),
 
                 const SizedBox(height: 24),
@@ -372,4 +441,3 @@ Future<void> saveFcmTokenToFirestore() async {
     );
   }
 }
-

@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart'; //flutter의 기본 위젯 제공
 import 'package:url_launcher/url_launcher.dart'; //전화번호 클릭 시 전화 앱 실행
 import 'editprofile_screen.dart'; //설정 버튼 누리면 이동할 화면'
@@ -106,9 +105,9 @@ class _CallScreenState extends State<CallScreen> {
                 // ✅ 먼저 로컬에 추가
                 setState(() {
                   addedContacts.add({
-                    'name': name,
+                    'senderName': name,
                     'number': number,
-                    'email': email,
+                    'targetEmail': email,
                   });
                 });
                 await saveContacts();
@@ -126,8 +125,8 @@ class _CallScreenState extends State<CallScreen> {
                       .doc(user.uid)
                       .collection('emergencyEmails')
                       .add({
-                        'name': name,
-                        'email': email,
+                        'senderName': name,
+                        'targetEmail': email,
                         'number': number,
                         'timestamp': FieldValue.serverTimestamp(),
                       });
@@ -164,8 +163,8 @@ class _CallScreenState extends State<CallScreen> {
                         .httpsCallable('sendLocationRequest');
                     print(FirebaseAuth.instance.currentUser?.uid);
                     final result = await callable.call(<String, dynamic>{
-                      'email': email, // 사용자가 입력한 친구 이메일
-                      'name': name, // 이름도 함께 전달해도 좋음
+                      'targetEmail': email, // 사용자가 입력한 친구 이메일
+                      'senderName': name, // 이름도 함께 전달해도 좋음
                       'number': number, // 선택사항
                     });
                     print('📨 푸시 알림 결과: ${result.data}');
@@ -216,7 +215,7 @@ class _CallScreenState extends State<CallScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    contact['name']!,
+                    contact['senderName']!,
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
@@ -282,6 +281,18 @@ class _CallScreenState extends State<CallScreen> {
     );
   }
 
+  // 알림 설정 가져오기
+  Future<bool> _getNotificationPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('disaster_alert_enabled') ?? true;
+  }
+
+  // 알림 설정 저장
+  Future<void> _saveNotificationPreference(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('disaster_alert_enabled', value);
+  }
+
   @override
   Widget build(BuildContext context) {
     //build() UI 구성
@@ -295,6 +306,21 @@ class _CallScreenState extends State<CallScreen> {
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
+          // 알림 설정 토글 스위치
+          FutureBuilder<bool>(
+            future: _getNotificationPreference(),
+            builder: (context, snapshot) {
+              final isEnabled = snapshot.data ?? true;
+              return Switch(
+                value: isEnabled,
+                onChanged: (value) async {
+                  await _saveNotificationPreference(value);
+                  setState(() {});
+                },
+                activeColor: Colors.blue,
+              );
+            },
+          ),
           //설정 아이콘 => 누르면 ProfileScreen으로 이동
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.black),
