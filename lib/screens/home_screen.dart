@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
@@ -11,6 +14,7 @@ import '../widgets/disaster_alert_section.dart';
 import 'disaster_alert_list_screen.dart';
 import '../models/disaster_alert.dart';
 import '../services/disaster_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,9 +51,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  //사용자가 로그인해서 홈 화면에 들어오면 바로 FCM 토큰을 저장
+  //firebase functions을 통해 상대방에게 push 알람을 보낼 때 fcmToken을 통해서 상대를 확인
+  //push_function/index.js의 sendLocationRequest 함수가 firebase store의 users에서 email==targetEmail 조건으로 FCM 토큰을 가져와야 알림을 보냄
   @override
   void initState() {
     super.initState();
+    //fcm 토큰 관련 
+    saveFcmTokenToFirestore(); //홈화면 오면 토큰을 저장하게 함수 호출
     _fetchWeatherData(); // This will now trigger _fetchDisasterAlerts internally
 
     // 매 시간마다 날씨 데이터 업데이트
@@ -205,6 +214,26 @@ class _HomeScreenState extends State<HomeScreen> {
         : null;
   }
 
+//FCM 토큰 관련
+
+Future<void> saveFcmTokenToFirestore() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    if (fcmToken == null) return;
+
+    final userDoc = FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+    await userDoc.set({
+      'email': user.email,
+      'fcmToken': fcmToken,
+    }, SetOptions(merge: true));
+  }
+
+
+
+
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
@@ -315,3 +344,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
