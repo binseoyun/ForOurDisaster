@@ -57,6 +57,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1  
   shared_preferences: ^2.2.2
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -71,6 +72,9 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+
+  uses-material-design: true
+
   assets:
     - lib/assets/sun.png
     - lib/assets/moon.png
@@ -88,12 +92,23 @@ flutter:
     - lib/assets/snow-night.png
     - lib/assets/wind.png
     - lib/assets/cloud.png
+    - assets/icon/app_icon4.png
     - .env
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
-  uses-material-design: true
+
+flutter_icons:
+
+    
+
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon4.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon/app_icon4.png"
+    
 
   # To add assets to your application, add an assets section, like this:
   # assets:
