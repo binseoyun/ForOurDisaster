@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; //나중에 firestore 만들어서 연결해야함
 import 'package:firebase_auth/firebase_auth.dart'; //현재 로그인된 사용자의 uid를 불러와야 함
+import 'call_screen.dart';
 
 //DropdownButton의 value가 메뉴 항목 중 정확히 하나와 일치하지 않아서 문제 발생
 //value 값이 실제로 DropdownMenuItem 리스트에 존재하는 지 중복은 없는지 확인
@@ -96,9 +97,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       title: const Text("프로필", style: TextStyle(fontWeight: FontWeight.bold)),
       leading: IconButton(
       icon: const Icon(Icons.arrow_back),
-    onPressed: () {//call_screen.dart 화면인 CallScreen 클래스로 이동
+      onPressed: () {//call_screen.dart 화면인 CallScreen 클래스로 이동
      //나중에 main에 등록 후 사용
-     //Navigator.pushReplacement(context, '/call_screen');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const CallScreen()),
+      );
     },
   ),
 ),
