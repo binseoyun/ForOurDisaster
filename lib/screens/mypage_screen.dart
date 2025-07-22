@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 void main() {
-  runApp(const MypageScreen());  // 여기만 수정하면 돼요!
+  runApp(const MypageScreen()); // 여기만 수정하면 돼요!
 }
 
 class MypageScreen extends StatelessWidget {
