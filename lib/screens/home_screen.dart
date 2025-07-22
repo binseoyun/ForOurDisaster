@@ -8,9 +8,10 @@ import '../services/weather_service.dart';
 import '../widgets/weather_section.dart';
 import '../widgets/quiz_section.dart';
 import '../widgets/disaster_alert_section.dart';
-import 'disaster_alert_list_screen.dart';
 import '../models/disaster_alert.dart';
 import '../services/disaster_service.dart';
+import 'alarm_screen.dart';
+import 'chatbot_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -258,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        DisasterAlertListScreen(initialRegion: regionToPass),
+                        AlarmScreen(initialRegion: regionToPass),
                   ),
                 );
               },
@@ -269,48 +270,72 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 상단 날씨 정보
-            WeatherSection(
-              weatherData: weatherData,
-              errorMessage: errorMessage,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 상단 날씨 정보
+                WeatherSection(
+                  weatherData: weatherData,
+                  errorMessage: errorMessage,
+                ),
+
+                const SizedBox(height: 20),
+
+                DisasterAlertSection(
+                  alerts: latestAlerts
+                      .map(
+                        (alert) => {
+                          'title': alert.emrgStepNm,
+                          'message': alert.msgCn,
+                          'time': alert.formattedTime, //"12:27 PM 형식"
+                        },
+                      )
+                      .toList(),
+                  region:
+                      _locality != null &&
+                          _locality!.isNotEmpty &&
+                          _locality != 'Unknown'
+                      ? '${_administrativeArea ?? ''} $_locality'.trim()
+                      : _administrativeArea ?? '서울특별시',
+                ),
+
+                const SizedBox(height: 24),
+
+                // 오늘의 상식 퀴즈
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: QuizSection(),
+                ),
+
+                const SizedBox(height: 20), // 하단 padding
+              ],
             ),
-
-            const SizedBox(height: 20),
-
-            DisasterAlertSection(
-              alerts: latestAlerts
-                  .map(
-                    (alert) => {
-                      'title': alert.emrgStepNm,
-                      'message': alert.msgCn,
-                      'time': alert.formattedTime, //"12:27 PM 형식"
-                    },
-                  )
-                  .toList(),
-              region:
-                  _locality != null &&
-                      _locality!.isNotEmpty &&
-                      _locality != 'Unknown'
-                  ? '${_administrativeArea ?? ''} $_locality'.trim()
-                  : _administrativeArea ?? '서울특별시',
+          ),
+          //챗봇 아이콘
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: FloatingActionButton(
+              backgroundColor: Colors.white,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ChatbotScreen(),
+                  ),
+                );
+              },
+              child: const Icon(
+                Icons.chat_bubble,
+                color: Color.fromARGB(159, 28, 92, 31),
+              ),
             ),
-
-            const SizedBox(height: 24),
-
-            // 오늘의 상식 퀴즈
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: QuizSection(),
-            ),
-
-            const SizedBox(height: 20), // 하단 padding
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

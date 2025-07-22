@@ -1,12 +1,13 @@
 import 'dart:convert';
-import 'package:formydisaster/models/disaster_alert.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:formydisaster/models/disaster_alert.dart';
 import 'package:intl/intl.dart'; // DateFormat을 위해 추가
 
 class DisasterService {
   // _baseUrl은 이제 더 이상 수정할 필요 없이 이대로 사용합니다.
   final String _baseUrl = 'https://www.safetydata.go.kr/V2/api/DSSP-IF-00247';
-  final String _serviceKey = '8FO6D9WJKB34ON28';
+  String get _serviceKey => dotenv.env['DISASTER_API_KEY'] ?? '';
 
   // 재난 문자 API 호출을 위한 공통 로직
   Future<List<Map<String, dynamic>>> _fetchDisasterData({

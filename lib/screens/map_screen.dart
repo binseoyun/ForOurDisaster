@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:http/http.dart' as http; //공공 데이터 API 호출 함수 만들기 위해 추가한 2개 import
+import 'package:geolocator/geolocator.dart';
 import 'dart:convert';
 
 //친구 위치를 뜨게 수정
@@ -55,7 +56,7 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
     LatLng position,
     String shelterCode,
   ) async {
-    const serviceKey = 'C6U74L503B938FO4';
+    final serviceKey = dotenv.env['PUBLIC_SHELTER_API_KEY'] ?? '';
     const delta = 0.05; //10km반경 이내의 대피소 위치 지정
 
     final startLat = (position.latitude - delta).toStringAsFixed(6); //시작위도

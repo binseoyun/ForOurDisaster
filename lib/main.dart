@@ -8,10 +8,14 @@ import 'screens/signup_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/editprofile_screen.dart';
 import 'screens/navigation_wrapper.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  //.env파일 불러오기기
+  await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(const MyApp());
 }
 
@@ -43,8 +47,10 @@ class MyApp extends StatelessWidget {
                   return const SplashScreen();
                 }
                 if (userSnapshot.hasData && userSnapshot.data!.exists) {
-                  final userData = userSnapshot.data!.data() as Map<String, dynamic>;
-                  if (userData['name'] == null || (userData['name'] as String).isEmpty) {
+                  final userData =
+                      userSnapshot.data!.data() as Map<String, dynamic>;
+                  if (userData['name'] == null ||
+                      (userData['name'] as String).isEmpty) {
                     return const ProfileScreen();
                   }
                 }
