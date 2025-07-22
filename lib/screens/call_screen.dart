@@ -17,14 +17,28 @@ class CallScreen extends StatefulWidget {
 
 class _CallScreenState extends State<CallScreen> {
   String myEmergencyNumber = '010-0000-1111'; //초기 연락처
+  String _userName="정재현"; //SharedPreferences에서 불러올 이름
+
   final List<Map<String, String>> addedContacts = []; //사용자가 추가한 이름과 연락처 저장
 
-  @override
+ 
   @override
   void initState() {
     super.initState();
     loadContacts(); // 앱 시작 시 로컬 데이터 불러오기
+    _loadUserNameFromLocal(); //이름 불러오기
   }
+
+  Future<void> _loadUserNameFromLocal() async{
+    final prefs=await SharedPreferences.getInstance();
+    final name=prefs.getString('userName');
+    if(name!=null && name.isNotEmpty){
+      setState(() {
+        _userName=name;
+      });
+    }
+  }
+
 
   void _call(String number) async {
     final uri = Uri(scheme: 'tel', path: number); //전화번호 눌렀을 때 tel: URL로 전화 앱 실행
@@ -301,8 +315,8 @@ class _CallScreenState extends State<CallScreen> {
       appBar: AppBar(
         //화면 상단 바
         titleSpacing: 16,
-        title: const Text(
-          '빈서윤',
+        title:  Text(
+          _userName,
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [

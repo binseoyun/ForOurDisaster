@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; //나중에 firestore 만들어서 연결해야함
 import 'package:firebase_auth/firebase_auth.dart'; //현재 로그인된 사용자의 uid를 불러와야 함
+import 'package:shared_preferences/shared_preferences.dart';
 import 'call_screen.dart';
 
 //DropdownButton의 value가 메뉴 항목 중 정확히 하나와 일치하지 않아서 문제 발생
@@ -68,6 +69,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'timestamp': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true)); //기존 문서가 있으면 업데이트, 없으면 생성
 
+    //이름을 SharedPreferences에 저장
+    final prefs=await SharedPreferences.getInstance();
+    await prefs.setString('userName', name);
+
+    
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('저장 완료!')),
@@ -80,6 +86,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ).showSnackBar(SnackBar(content: Text('저장 실패: $e')));
     }
   }
+
+  
 
   @override
   void initState() {
