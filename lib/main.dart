@@ -9,8 +9,11 @@ import 'screens/login_screen.dart';
 import 'screens/editprofile_screen.dart';
 import 'screens/navigation_wrapper.dart';
 
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+ 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
