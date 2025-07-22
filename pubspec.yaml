@@ -92,7 +92,7 @@ flutter:
     - lib/assets/snow-night.png
     - lib/assets/wind.png
     - lib/assets/cloud.png
-    - assets/icon/app_icon4.png
+    - assets/icon/app_icon6.png
     - .env
 
   # The following line ensures that the Material Icons font is
@@ -105,9 +105,9 @@ flutter_icons:
 
   android: true
   ios: true
-  image_path: "assets/icon/app_icon4.png"
+  image_path: "assets/icon/app_icon6.png"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/icon/app_icon4.png"
+  adaptive_icon_foreground: "assets/icon/app_icon6.png"
     
 
   # To add assets to your application, add an assets section, like this:
