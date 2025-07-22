@@ -10,10 +10,16 @@ import 'screens/editprofile_screen.dart';
 import 'screens/navigation_wrapper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   //.env파일 불러오기기
   await dotenv.load(fileName: ".env");
+
+ 
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const MyApp());

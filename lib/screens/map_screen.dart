@@ -5,6 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 //친구 위치를 뜨게 수정
 //상단에서 친구 보기 버튼을 누르면 대피소 마커가 사라지고, 친구의 위치가 뜨게 설정
@@ -56,7 +58,12 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
     LatLng position,
     String shelterCode,
   ) async {
+
     final serviceKey = dotenv.env['PUBLIC_SHELTER_API_KEY'] ?? '';
+
+    //const serviceKey = 'C6U74L503B938FO4';
+    
+
     const delta = 0.05; //10km반경 이내의 대피소 위치 지정
 
     final startLat = (position.latitude - delta).toStringAsFixed(6); //시작위도
