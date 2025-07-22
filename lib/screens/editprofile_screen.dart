@@ -68,11 +68,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'timestamp': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true)); //기존 문서가 있으면 업데이트, 없으면 생성
 
-    //이름을 SharedPreferences에 저장
-    final prefs=await SharedPreferences.getInstance();
-    await prefs.setString('userName', name);
+      //이름을 SharedPreferences에 저장
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userName', name);
 
-    
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -85,8 +84,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ).showSnackBar(SnackBar(content: Text('저장 실패: $e')));
     }
   }
-
-  
 
   @override
   void initState() {
@@ -104,14 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: const Text("프로필", style: TextStyle(fontWeight: FontWeight.bold)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            //call_screen.dart 화면인 CallScreen 클래스로 이동
-            //나중에 main에 등록 후 사용
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const CallScreen()),
-            );
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
 
