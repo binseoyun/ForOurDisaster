@@ -24,7 +24,10 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
       return {'score': 0, 'history': []};
     }
 
-    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
     final score = userDoc.data()?['score'] ?? 0;
 
     final historySnapshot = await FirebaseFirestore.instance
@@ -42,12 +45,15 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('퀴즈 기록', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          '퀴즈 기록',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF7F8FA), // 밝은 배경
       body: FutureBuilder<Map<String, dynamic>>(
         future: _quizData,
         builder: (context, snapshot) {
@@ -65,16 +71,24 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
           final quizHistory = snapshot.data!['history'] as List;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Score Section
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(28),
+                  margin: const EdgeInsets.only(bottom: 28),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE7F0E5),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Center(
                     child: Column(
@@ -91,7 +105,7 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
                         Text(
                           '$score점',
                           style: const TextStyle(
-                            fontSize: 36,
+                            fontSize: 40,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF4B6045),
                           ),
@@ -100,14 +114,11 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-
-                // 퀴즈 히스토리
                 const Text(
                   '퀴즈 히스토리',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 if (quizHistory.isEmpty)
                   const Center(
                     child: Padding(
@@ -123,42 +134,88 @@ class _QuizHistoryScreenState extends State<QuizHistoryScreen> {
                     itemBuilder: (context, index) {
                       final item = quizHistory[index];
                       final isCorrect = item['isCorrect'] as bool;
-                      final selected = item['selected'] as int? ?? 0; // Handle null by providing a default of 0
-                      final correct = item['correct'] as int? ?? 0; // Handle null by providing a default of 0
+                      final selected = item['selected'] as int? ?? 0;
+                      final correct = item['correct'] as int? ?? 0;
+                      final question = item['question'] ?? '';
+                      final explanation = item['explanation'] ?? '';
 
-                      return Card(
-                        elevation: 1,
-                        margin: const EdgeInsets.only(bottom: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: Colors.grey.shade200),
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.10),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(20.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Q. ${item['question']}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                              Row(
+                                children: [
+                                  Icon(
+                                    isCorrect ? Icons.check_circle : Icons.cancel,
+                                    color: isCorrect ? Colors.green : Colors.red,
+                                    size: 22,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Q. $question',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '내 답: ${String.fromCharCode(65 + selected)}',
-                                style: TextStyle(
-                                  color: isCorrect ? Colors.green : Colors.red,
-                                ),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  Text(
+                                    '내 답: ',
+                                    style: TextStyle(
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                  Text(
+                                    String.fromCharCode(65 + selected),
+                                    style: TextStyle(
+                                      color: isCorrect ? Colors.green : Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Text(
+                                    '정답: ',
+                                    style: TextStyle(color: Colors.grey[700]),
+                                  ),
+                                  Text(
+                                    String.fromCharCode(65 + correct),
+                                    style: const TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Text('정답: ${String.fromCharCode(65 + correct)}'),
-                              const SizedBox(height: 8),
-                              if (item['explanation'] != null &&
-                                  item['explanation'].toString().isNotEmpty)
-                                Text(
-                                  '설명: ${item['explanation']}',
-                                  style: const TextStyle(fontStyle: FontStyle.italic),
+                              if (explanation.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10.0),
+                                  child: Text(
+                                    '설명: $explanation',
+                                    style: const TextStyle(
+                                      fontStyle: FontStyle.italic,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
                                 ),
                             ],
                           ),

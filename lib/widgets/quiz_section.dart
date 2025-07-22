@@ -62,6 +62,7 @@ class _QuizSectionState extends State<QuizSection> {
               .doc(user.uid)
               .collection('quiz_history')
               .where('quizId', isEqualTo: todayQuizDoc.id)
+              .where('date', isEqualTo: today)
               .limit(1)
               .get();
 
@@ -99,6 +100,7 @@ class _QuizSectionState extends State<QuizSection> {
     final data = quizDoc!.data() as Map<String, dynamic>;
     final correctIndex = data['answerId'] as int?; // Make it nullable
     final isCorrect = index == correctIndex;
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     setState(() {
       selectedQuizIndex = index;
@@ -111,18 +113,21 @@ class _QuizSectionState extends State<QuizSection> {
         .doc(user.uid)
         .collection('quiz_history')
         .add({
-      'quizId': quizDoc!.id,
-      'question': data['question'],
-      'selected': index,
-      'correct': correctIndex,
-      'isCorrect': isCorrect,
-      'explanation': data['explanation'] ?? '',
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+          'quizId': quizDoc!.id,
+          'question': data['question'],
+          'selected': index,
+          'correct': correctIndex,
+          'isCorrect': isCorrect,
+          'date': today,
+          'explanation': data['explanation'] ?? '',
+          'timestamp': FieldValue.serverTimestamp(),
+        });
 
     // Update score if correct
     if (isCorrect) {
-      final userDocRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+      final userDocRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid);
       await userDocRef.update({'score': FieldValue.increment(1)});
       setState(() {
         score++;
@@ -160,22 +165,28 @@ class _QuizSectionState extends State<QuizSection> {
     }
 
     if (quizDoc == null) {
-      return const Center(
-        child: Text('오늘의 퀴즈가 없습니다.'),
-      );
+      return const Center(child: Text('오늘의 퀴즈가 없습니다.'));
     }
 
     final data = quizDoc!.data() as Map<String, dynamic>;
     final question = data['question'];
     final choices = List<String>.from(data['choices']);
-    final correctIndex = data['answerId'] as int? ?? -1; // Provide a default if null
+    final correctIndex =
+        data['answerId'] as int? ?? -1; // Provide a default if null
     final explanation = data['explanation'] ?? '';
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: const Color(0xFFE7F0E5),
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.10),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,11 +194,22 @@ class _QuizSectionState extends State<QuizSection> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.lightbulb_outline, color: Color(0xFF4B6045)),
-                  SizedBox(width: 8),
-                  Text(
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE7F0E5),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.all(6),
+                    child: const Icon(
+                      Icons.lightbulb_outline,
+                      color: Color(0xFFFFC107),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
                     "오늘의 상식 퀴즈!",
                     style: TextStyle(
                       fontSize: 16,
@@ -206,37 +228,76 @@ class _QuizSectionState extends State<QuizSection> {
                     ),
                   );
                 },
-                child: Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+                child: Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.grey,
+                  size: 16,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text("Q. $question", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
           const SizedBox(height: 16),
+          Text(
+            "Q. $question",
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 18),
           Row(
             children: [
               for (int i = 0; i < choices.length; i++)
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onSelectChoice(i),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      margin: EdgeInsets.only(right: i < choices.length - 1 ? 8.0 : 0),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      margin: EdgeInsets.only(
+                        right: i < choices.length - 1 ? 10.0 : 0,
+                      ),
                       decoration: BoxDecoration(
                         color: !answered
                             ? Colors.white
                             : (i == correctIndex
-                                ? Colors.green.withOpacity(0.3)
-                                : (selectedQuizIndex != null && selectedQuizIndex == i
-                                    ? Colors.red.withOpacity(0.3)
-                                    : Colors.white)),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
+                                  ? Colors.green.withOpacity(0.18)
+                                  : (selectedQuizIndex != null &&
+                                            selectedQuizIndex == i
+                                        ? Colors.red.withOpacity(0.15)
+                                        : Colors.white)),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: !answered
+                              ? Colors.grey.shade300
+                              : (i == correctIndex
+                                    ? Colors.green
+                                    : (selectedQuizIndex != null &&
+                                              selectedQuizIndex == i
+                                          ? Colors.red
+                                          : Colors.grey.shade300)),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.07),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Center(
                         child: Text(
                           "${String.fromCharCode(65 + i)}. ${choices[i]}",
-                          style: const TextStyle(fontSize: 15),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: !answered
+                                ? Colors.black
+                                : (i == correctIndex
+                                      ? Colors.green[800]
+                                      : (selectedQuizIndex != null &&
+                                                selectedQuizIndex == i
+                                            ? Colors.red[800]
+                                            : Colors.black)),
+                          ),
                         ),
                       ),
                     ),
@@ -246,24 +307,56 @@ class _QuizSectionState extends State<QuizSection> {
           ),
           if (answered)
             Padding(
-              padding: const EdgeInsets.only(top: 12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isCorrect(selectedQuizIndex, correctIndex) ? '정답입니다!' : '오답입니다.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isCorrect(selectedQuizIndex, correctIndex) ? Colors.green : Colors.red,
+              padding: const EdgeInsets.only(top: 18.0),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isCorrect(selectedQuizIndex, correctIndex)
+                      ? Colors.green.withOpacity(0.10)
+                      : Colors.red.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          isCorrect(selectedQuizIndex, correctIndex)
+                              ? Icons.check_circle
+                              : Icons.cancel,
+                          color: isCorrect(selectedQuizIndex, correctIndex)
+                              ? Colors.green
+                              : Colors.red,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          isCorrect(selectedQuizIndex, correctIndex)
+                              ? '정답입니다!'
+                              : '오답입니다.',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: isCorrect(selectedQuizIndex, correctIndex)
+                                ? Colors.green
+                                : Colors.red,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "설명: $explanation",
-                    style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-                  ),
-                ],
+                    const SizedBox(height: 6),
+                    Text(
+                      "설명: $explanation",
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
         ],

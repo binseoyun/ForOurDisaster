@@ -20,7 +20,11 @@ class WeatherSection extends StatelessWidget {
   final WeatherData? weatherData;
   final String? errorMessage;
 
-  const WeatherSection({super.key, required this.weatherData, this.errorMessage});
+  const WeatherSection({
+    super.key,
+    required this.weatherData,
+    this.errorMessage,
+  });
 
   // API 에서 받은 icon 문자열에 따라 이미지 파일명 반환 함수
   String _mapIconName(String iconCode) {
@@ -127,7 +131,7 @@ class WeatherSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "${wData.tempCurrent.round()}°",
+                  "${wData.tempCurrent.round()}°C",
                   style: TextStyle(
                     color: Color(0xFFF9FBFA),
                     fontSize: 48,
@@ -149,7 +153,7 @@ class WeatherSection extends StatelessWidget {
 
                 //강수 확률
                 Text(
-                  "${(wData.precipitationProbablity * 100).round()} % chance of rain",
+                  "강수 확률: ${(wData.precipitationProbablity * 100).round()} %",
                   style: TextStyle(color: Color(0xFFF9FBFA), fontSize: 14),
                 ),
 
@@ -166,66 +170,66 @@ class WeatherSection extends StatelessWidget {
             ),
           ),
 
-            //지역명 (우측 상단
-            Positioned(
-              right: 0,
-              top: 0,
-              child: Text(
-                "📍 ${wData.locationName}",
-                style: const TextStyle(
-                  color: Color(0xFFF9FBFA),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+          //지역명 (우측 상단
+          Positioned(
+            right: 0,
+            top: 0,
+            child: Text(
+              "📍 ${wData.locationName}",
+              style: const TextStyle(
+                color: Color(0xFFF9FBFA),
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
               ),
             ),
+          ),
 
           // 날씨 아이콘 (우측 중앙)
           Positioned(
-            right: -15,
-            top: 20,
+            right: 0,
+            top: -7,
             child: Image.asset(
               _mapIconName(wData.iconCode),
-              height: 120,
+              height: 180,
               fit: BoxFit.contain,
             ),
           ),
 
-            // 추가 정보 (우측 하단)
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    "Humidity: ${wData.humidity}%",
-                    style: const TextStyle(
-                      color: Color(0xFFEBEBF5),
-                      fontSize: 12,
-                    ),
+          // 추가 정보 (우측 하단)
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  "습도: ${wData.humidity}%",
+                  style: const TextStyle(
+                    color: Color(0xFFEBEBF5),
+                    fontSize: 12,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    "Wind: ${wData.windSpeed.toStringAsFixed(1)} m/s",
-                    style: const TextStyle(
-                      color: Color(0xFFEBEBF5),
-                      fontSize: 12,
-                    ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  "바람: ${wData.windSpeed.toStringAsFixed(1)} m/s",
+                  style: const TextStyle(
+                    color: Color(0xFFEBEBF5),
+                    fontSize: 12,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    "UV Index: ${wData.uvi.toStringAsFixed(1)}",
-                    style: const TextStyle(
-                      color: Color(0xFFEBEBF5),
-                      fontSize: 12,
-                    ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  "자외선지수: ${wData.uvi.toStringAsFixed(1)}",
+                  style: const TextStyle(
+                    color: Color(0xFFEBEBF5),
+                    fontSize: 12,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
   }
 }
