@@ -52,9 +52,12 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         .collection('users')
         .doc(user.uid)
         .get();
-    
+
     final regionData = userDoc.data();
-    final String? region = (regionData != null && regionData['regions'] is List && (regionData['regions'] as List).isNotEmpty)
+    final String? region =
+        (regionData != null &&
+            regionData['regions'] is List &&
+            (regionData['regions'] as List).isNotEmpty)
         ? (regionData['regions'] as List).first
         : null;
 
@@ -68,7 +71,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
           'timestamp': now,
           'type': message.data['type'] ?? 'unknown',
           'shownInUI': shownInUI,
-          'region': region,  // Save the region with the alert
+          'region': region, // Save the region with the alert
         });
   }
 
@@ -160,32 +163,40 @@ void setupFCMListeners(BuildContext context) {
 
     //Firestore에 알림 기록 저장
     final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      // Get the user's current region from Firestore
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-      
-      final regionData = userDoc.data();
-      final String? region = (regionData != null && regionData['regions'] is List && (regionData['regions'] as List).isNotEmpty)
-          ? (regionData['regions'] as List).first
-          : null;
 
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('notifications')
-          .add({
-            'title': title,
-            'body': body,
-            'timestamp': now,
-            'type': message.data['type'] ?? 'unknown',
-            'shownInUI': shownInUI,
-            'region': region,  // Save the region with the alert
-          });
+    if (user == null) {
+      print("🚫 인증 안 된 상태에서 Firestore에 접근하려 함");
+      return;
     }
+    final uid = user.uid;
 
+    // Get the user's current region from Firestore
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    final regionData = userDoc.data();
+    final String? region =
+        (regionData != null &&
+            regionData['regions'] is List &&
+            (regionData['regions'] as List).isNotEmpty)
+        ? (regionData['regions'] as List).first
+        : null;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('notifications')
+        .add({
+          'title': title,
+          'body': body,
+          'timestamp': now,
+          'type': message.data['type'] ?? 'unknown',
+          'shownInUI': shownInUI,
+          'region': region, // Save the region with the alert
+        });
+  
     if (shownInUI) {
       await showLocalNotification(title, body);
     }

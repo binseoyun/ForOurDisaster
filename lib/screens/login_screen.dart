@@ -193,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(
                     fontSize: 18.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white, // 흰색 텍스트    TODOTODO
+                    color: Colors.white, // 흰색 텍스트    TODO
                   ),
                 ),
               ),
