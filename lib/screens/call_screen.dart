@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart'; //연락처가 loca
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_core/firebase_core.dart';
+
 
 class CallScreen extends StatefulWidget {
   //StatefulWidget으로 정의하여, 연락처 추가/삭제 시 UI 업데이트
@@ -120,14 +122,19 @@ class _CallScreenState extends State<CallScreen> {
                   return;
                 }
 
+              
+               //토큰을 강제로 갱신
+               await user.getIdToken(true);
+
+
                 try {
                   await FirebaseFirestore.instance
                       .collection('users')
                       .doc(user.uid)
                       .collection('emergencyEmails')
                       .add({
-                        'name': name,
-                        'email': email,
+                        'targetEmail': email,
+                        'senderName': name,
                         'number': number,
                         'timestamp': FieldValue.serverTimestamp(),
                       });
@@ -160,16 +167,33 @@ class _CallScreenState extends State<CallScreen> {
                   print("🔔 위치 공유 요청 푸시 알림을 보냅니다.");
 
                   try {
-                    final HttpsCallable callable = FirebaseFunctions.instance
-                        .httpsCallable('sendLocationRequest');
-                    print(FirebaseAuth.instance.currentUser?.uid);
+                    //final HttpsCallable callable = FirebaseFunctions.instance
+                      //  .httpsCallable('sendLocationRequest');
+                    
+                    final app=Firebase.app();
+                    final functions=FirebaseFunctions.instanceFor(
+                      app:app,
+                      region:'us-central1', //실제 배포한 region
+                    );
+                    
+                    final callable= FirebaseFunctions.instance.httpsCallable('sendLocationRequest');
+                     print(FirebaseAuth.instance.currentUser?.uid);
                     final result = await callable.call(<String, dynamic>{
-                      'email': email, // 사용자가 입력한 친구 이메일
-                      'name': name, // 이름도 함께 전달해도 좋음
+                      'targetEmail': email, // 사용자가 입력한 친구 이메일
+                      'senderName': name, // 이름도 함께 전달해도 좋음
                       'number': number, // 선택사항
                     });
                     print('📨 푸시 알림 결과: ${result.data}');
                   } catch (e) {
+                        if(e is FirebaseFunctionsException){
+                          print('❗️FirebaseFunctionsException 발생');
+                          print('code: ${e.code}');
+                          print('message:${e.message}');
+                          print('details: ${e.details}');
+                        }else{
+                          print('❌Unknown error:$e');
+                        }
+
                     print('Cloud Function 호출 실패:$e');
                   }
                 } else {
