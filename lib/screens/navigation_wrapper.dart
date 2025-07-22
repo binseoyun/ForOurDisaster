@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:formydisaster/screens/map_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'home_screen.dart';
 import 'call_screen.dart';
 import 'manual_screen.dart';
@@ -22,11 +23,16 @@ class NavigationWrapperState extends State<NavigationWrapper> {
   ];
 
   void _onItemTapped(int index) {
+    final user = FirebaseAuth.instance.currentUser;
+    final userEmail = user?.email ?? 'No user logged in';
+    print('Tab changed to index $index by user: $userEmail');
+
     setState(() {
       _selectedIndex = index;
     });
   }
-@override
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_selectedIndex],
@@ -44,8 +50,7 @@ class NavigationWrapperState extends State<NavigationWrapper> {
             BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
             BottomNavigationBarItem(icon: Icon(Icons.location_on), label: ''),
             BottomNavigationBarItem(icon: Icon(Icons.warning), label: ''),
-            BottomNavigationBarItem(icon: Icon(Icons.call),label: '',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.call), label: ''),
           ],
         ),
       ),
