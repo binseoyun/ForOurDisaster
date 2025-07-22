@@ -21,8 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _emailController = TextEditingController(); //이메일
   final _passwordController = TextEditingController(); //password
 
-
-//Firestore에서 기존 사용자 데이터 불러오기
+  //Firestore에서 기존 사용자 데이터 불러오기
   Future<void> _loadUserProfile() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
@@ -45,7 +44,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _saveToFirebase() async {
     //이 uid를 Firestore 문서의 ID로 사용해 정보를 불러오거나 수정
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if(uid==null) return; //사용자 정보 없으면
+    if (uid == null) return; //사용자 정보 없으면
 
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
@@ -69,9 +68,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }, SetOptions(merge: true)); //기존 문서가 있으면 업데이트, 없으면 생성
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('저장 완료!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('저장 완료!')));
         Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
@@ -94,18 +93,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: Colors.white,
       //상단 앱바 부분
       appBar: AppBar(
-      title: const Text("프로필", style: TextStyle(fontWeight: FontWeight.bold)),
-      leading: IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {//call_screen.dart 화면인 CallScreen 클래스로 이동
-     //나중에 main에 등록 후 사용
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const CallScreen()),
-      );
-    },
-  ),
-),
+        title: const Text("프로필", style: TextStyle(fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            //call_screen.dart 화면인 CallScreen 클래스로 이동
+            //나중에 main에 등록 후 사용
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const CallScreen()),
+            );
+          },
+        ),
+      ),
 
       //body 전체 입력 폼
       body: Padding(
@@ -117,7 +117,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             TextField(
               //사용자 입력을 받을 수 있는 필드
               controller: _nameController, //controller를 사용해서 사용자가 입력한 내용을 가져옴
-              decoration: _inputDecoration("Ms.Kim"), //decoration은 힌트 텍스트 및 테두리 스타일
+              decoration: _inputDecoration(
+                "Ms.Kim",
+              ), //decoration은 힌트 텍스트 및 테두리 스타일
             ),
             const SizedBox(height: 16),
             _buildLabel("Email"),
@@ -131,13 +133,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             TextField(
               controller: _passwordController,
               obscureText: true,
-              decoration: _inputDecoration("**********"),
+              decoration: _inputDecoration("********"),
             ),
-            const Spacer(), //남은 공간을 밀어내어 아래 버튼이 하단에 고정되게 
-            ElevatedButton( //저장 버튼
-              onPressed:_saveToFirebase, //firebase에 저장될 수 있게 저장 함수 호출
-            
-            //firebase_auth를 통해 로그인한 사용자 정보 연동, Firestore에 저장된 사용자 불러오기, 수정 시 기존값 불러오기 등
+            const Spacer(), //남은 공간을 밀어내어 아래 버튼이 하단에 고정되게
+            ElevatedButton(
+              //저장 버튼
+              onPressed: _saveToFirebase, //firebase에 저장될 수 있게 저장 함수 호출
+              //firebase_auth를 통해 로그인한 사용자 정보 연동, Firestore에 저장된 사용자 불러오기, 수정 시 기존값 불러오기 등
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF918B6E),
                 minimumSize: const Size(double.infinity, 50),

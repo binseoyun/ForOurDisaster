@@ -101,7 +101,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text("긴급 재난 문자")),
+      appBar: AppBar(title: const Text("알림")),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : errorMessage != null
