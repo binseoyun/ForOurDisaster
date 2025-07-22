@@ -232,7 +232,7 @@ Future<void> saveFcmTokenToFirestore() async {
     await userDoc.set({
       'email': user.email,
       'fcmToken': fcmToken,
-    }, SetOptions(merge: true));
+    }, SetOptions(merge: true)); //기존 데이터 데이터 덮어쓰지 않세 mrege사용
   }
 
 

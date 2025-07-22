@@ -30,15 +30,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-<<<<<<< HEAD
-  flutter_dotenv: ^5.2.1
-=======
+
+
    
   flutter_dotenv: ^5.2.1 
   google_maps_flutter: ^2.5.0 
->>>>>>> been6
+
   intl: ^0.19.0
-  google_maps_flutter: ^2.5.0 
+  
   firebase_core: ^3.15.1
   cloud_firestore: ^5.6.11
   firebase_auth: ^5.6.2
