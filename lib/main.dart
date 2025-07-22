@@ -219,14 +219,8 @@ class MyApp extends StatelessWidget {
                 if (userSnapshot.connectionState == ConnectionState.waiting) {
                   return const SplashScreen();
                 }
+                // FCM 필터링 적용
                 if (userSnapshot.hasData && userSnapshot.data!.exists) {
-                  final userData =
-                      userSnapshot.data!.data() as Map<String, dynamic>;
-                  if (userData['name'] == null ||
-                      (userData['name'] as String).isEmpty) {
-                    return const ProfileScreen();
-                  }
-                  //FCM 필터링 적용
                   setupFCMListeners(context);
                 }
                 return const NavigationWrapper();

@@ -34,6 +34,12 @@ class _SplashScreenState extends State<SplashScreen>
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
     _controller.forward();
+
+    // 최소 1.5초 이상 스플래시 유지
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      // 아무것도 하지 않음: 상위에서 SplashScreen을 대기 화면으로 사용
+      // (필요시 자동 이동 로직 추가 가능)
+    });
   }
 
   @override
