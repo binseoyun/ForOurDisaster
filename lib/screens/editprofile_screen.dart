@@ -19,8 +19,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _nameController = TextEditingController(); //이름
   final _emailController = TextEditingController(); //이메일
   final _passwordController = TextEditingController(); //password
-  final _cityController = TextEditingController(); //지역 입력용
-
 
 
 //Firestore에서 기존 사용자 데이터 불러오기
@@ -37,7 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _nameController.text = data['name'] ?? '';
       _emailController.text = data['email'] ?? '';
       _passwordController.text = data['password'] ?? '';
-      _cityController.text=data['country'] ?? '';
+      // 지역 정보는 이제 editprofile에서 관리하지 않으므로 제거
       setState(() {}); // 화면 반영
     }
   }
@@ -51,7 +49,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-    final city=_cityController.text.trim();
 
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(
@@ -60,14 +57,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
-    //firestore 버전 업그레이드 해서 연동 필요(데이터 설계해야함)
     try {
       //uid는 회원가입 혹은 로그인 할때 Firebase가 자동 발급
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'name': name,
         'email': email,
         'password': password,
-        'country': city,
+        // 'country' 또는 'regions' 필드는 이제 home_screen에서 관리
         'timestamp': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true)); //기존 문서가 있으면 업데이트, 없으면 생성
 
@@ -133,12 +129,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               obscureText: true,
               decoration: _inputDecoration("**********"),
             ),
-            const SizedBox(height: 16),
-            _buildLabel("Country/Region"),
-           TextField(
-            controller: _cityController,
-            decoration: _inputDecoration("예: 서울"),
-           ),
             const Spacer(), //남은 공간을 밀어내어 아래 버튼이 하단에 고정되게 
             ElevatedButton( //저장 버튼
               onPressed:_saveToFirebase, //firebase에 저장될 수 있게 저장 함수 호출

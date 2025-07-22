@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import '../models/disaster_alert.dart';
+import 'package:intl/intl.dart';
+import '../models/firestore_alert.dart';
 import '../services/disaster_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AlarmScreen extends StatefulWidget {
   final String? initialRegion;
@@ -14,7 +17,7 @@ class AlarmScreen extends StatefulWidget {
 class _AlarmScreenState extends State<AlarmScreen> {
   final DisasterService _disasterService = DisasterService();
 
-  List<DisasterAlert> alerts = [];
+  List<FirestoreAlert> alerts = [];
   bool isLoading = true;
   String? errorMessage;
 
@@ -31,31 +34,27 @@ class _AlarmScreenState extends State<AlarmScreen> {
     });
 
     try {
-      String regionToUse = widget.initialRegion ?? '';
-      print('Initial region from widget: ${widget.initialRegion}');
-
-      if (regionToUse.isEmpty || regionToUse == 'Unknown') {
-        regionToUse = '서울특별시';
-        print('지역명이 Unknown이거나 비어있어 기본 지역인 서울특별시로 설정합니다');
-      } else {
-        print('Using region: $regionToUse');
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() {
+          isLoading = false;
+          errorMessage = '로그인이 필요합니다.';
+        });
+        return;
       }
 
-      print('Calling fetchAllAlerts with region: $regionToUse');
-      final rawAlerts = await _disasterService.fetchAllAlerts(
-        region: regionToUse,
-      );
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('notifications')
+          .where('shownInUI', isEqualTo: true) //UI에 표시할 알림만!
+          .orderBy('timestamp', descending: true)
+          .limit(50)
+          .get();
 
-      // 최근 7일 이내의 재난 문자만 보여주기
-      final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
-      final recentAlerts = rawAlerts.where((alert) {
-        try {
-          final dt = DateTime.parse(alert.crtDt);
-          return dt.isAfter(sevenDaysAgo);
-        } catch (e) {
-          print('날짜 파싱 오류: ${alert.crtDt} - $e');
-          return false;
-        }
+      final recentAlerts = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return FirestoreAlert.fromDoc(doc);
       }).toList();
 
       setState(() {
@@ -71,7 +70,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
   }
 
   //재난 문자 칸 하나에 들어갈 내용
-  Widget _buildAlertItem(DisasterAlert alert) {
+  Widget _buildAlertItem(FirestoreAlert alert) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Container(
@@ -82,14 +81,14 @@ class _AlarmScreenState extends State<AlarmScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              alert.emrgStepNm,
+              alert.title,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
-            Text(alert.msgCn, style: const TextStyle(fontSize: 14)),
+            Text(alert.body, style: const TextStyle(fontSize: 14)),
             const SizedBox(height: 6),
             Text(
-              alert.formattedTime,
+              DateFormat('h:mm a').format(alert.timestamp),
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
           ],

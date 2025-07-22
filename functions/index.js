@@ -27,7 +27,6 @@ exports.pollDisasterMessages = onSchedule(
           pageNo: 1,
           numOfRows: 50,
           type: "json",
-          create_date: timeString,
         },
       });
 
@@ -100,6 +99,7 @@ exports.pollDisasterMessages = onSchedule(
           {
             ...alert,
             notifiedRegions: admin.firestore.FieldValue.arrayUnion(region),
+            shownInUI: true, //알림 목록에 표시할지 여부
           },
           { merge: true }
         );
@@ -112,4 +112,3 @@ exports.pollDisasterMessages = onSchedule(
     }
   }
 );
-
