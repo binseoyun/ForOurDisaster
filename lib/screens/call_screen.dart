@@ -303,7 +303,7 @@ class _CallScreenState extends State<CallScreen> {
         //화면 상단 바
         titleSpacing: 16,
         title: const Text(
-          '김정우',
+          '김수연',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
