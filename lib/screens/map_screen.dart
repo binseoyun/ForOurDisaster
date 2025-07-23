@@ -246,7 +246,7 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print('위치 불러오기 오류: $e');
+      print('위치  불러오기 오류: $e');
       setState(() {
         _errorMessage = '위치를 불러오는 중 오류가 발생했습니다: ${e.toString()}';
         _isLoading = false;
