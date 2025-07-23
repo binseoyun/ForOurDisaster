@@ -18,13 +18,36 @@ class CallScreen extends StatefulWidget {
 class _CallScreenState extends State<CallScreen> {
   String myEmergencyNumber = '010-0000-1111'; //초기 연락처
   final List<Map<String, String>> addedContacts = []; //사용자가 추가한 이름과 연락처 저장
+ 
+ String? userName;
 
   @override
   @override
   void initState() {
     super.initState();
     loadContacts(); // 앱 시작 시 로컬 데이터 불러오기
+    _loadUserName();
   }
+
+  Future<void> _loadUserName() async{
+    final user=FirebaseAuth.instance.currentUser;
+    if(user==null) return;
+  
+  try {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    if (doc.exists && doc.data()!.containsKey('name')) {
+      setState(() {
+        userName = doc['name'];
+      });
+    }
+  } catch (e) {
+    print("이름 불러오기 실패: $e");
+  }
+}
 
   void _call(String number) async {
     final uri = Uri(scheme: 'tel', path: number); //전화번호 눌렀을 때 tel: URL로 전화 앱 실행
@@ -428,8 +451,10 @@ class _CallScreenState extends State<CallScreen> {
       appBar: AppBar(
         //화면 상단 바
         titleSpacing: 16,
-        title: const Text(
-          '김정우',
+        title:  Text(
+          //여기에 하드 코딩이 아니라 firestore에서 사용자 이름을 불러오는 코드 추가
+
+          userName ?? '김정우',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
