@@ -69,6 +69,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
     }
   }
 
+/*
   //재난 문자 칸 하나에 들어갈 내용
   Widget _buildAlertItem(FirestoreAlert alert) {
     return Padding(
@@ -96,6 +97,89 @@ class _AlarmScreenState extends State<AlarmScreen> {
       ),
     );
   }
+
+*/
+
+Widget _buildAlertItem(FirestoreAlert alert) {
+  final isLocationRequest = alert.type == 'location_request';
+
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    child: Container(
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            alert.title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(alert.body, style: const TextStyle(fontSize: 14)),
+          const SizedBox(height: 6),
+          Text(
+            DateFormat('h:mm a').format(alert.timestamp),
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+          ),
+
+          if (isLocationRequest)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () async {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user == null) return;
+
+                    await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(user.uid)
+                        .collection('notifications')
+                        .doc(alert.alertId) // ✅ 문서 ID 필요
+                        .update({
+                      'response': 'rejected',
+                      'respondedAt': FieldValue.serverTimestamp(),
+                    });
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('위치 공유를 거절했어요')),
+                    );
+                  },
+                  child: const Text('거절'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user == null) return;
+
+                    await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(user.uid)
+                        .collection('notifications')
+                        .doc(alert.alertId) // ✅ 문서 ID 필요
+                        .update({
+                      'response': 'accepted',
+                      'respondedAt': FieldValue.serverTimestamp(),
+                    });
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('위치 공유에 동의했어요')),
+                    );
+                  },
+                  child: const Text('동의'),
+                ),
+              ],
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+
+  
 
   @override
   Widget build(BuildContext context) {

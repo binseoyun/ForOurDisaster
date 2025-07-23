@@ -8,6 +8,8 @@ class FirestoreAlert {
   final DateTime timestamp;
   final bool shownInUI;
   final String? region;
+  final String type; // 🔥 추가
+  final String? response; // 🔥 추가: accepted / rejected
 
   FirestoreAlert({
     required this.alertId,
@@ -15,7 +17,10 @@ class FirestoreAlert {
     required this.body,
     required this.timestamp,
     required this.shownInUI,
+    required this.type,
     this.region,
+    this.response,
+
   });
 
   factory FirestoreAlert.fromDoc(DocumentSnapshot doc) {
@@ -39,6 +44,8 @@ class FirestoreAlert {
       timestamp: (data['timestamp'] as Timestamp).toDate(), 
       shownInUI: data['shownInUI'] ?? true,
       region: data['region'],
+      type: data['type'] ?? 'unknown', // 기본값 처리
+      response: data['response'], // nullable
     );
   }
 }
