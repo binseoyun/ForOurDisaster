@@ -62,11 +62,40 @@ class _HomeScreenState extends State<HomeScreen> {
     saveFcmTokenToFirestore(); //홈화면 오면 토큰을 저장하게 함수 호출
     _fetchWeatherData(); // This will now trigger _fetchDisasterAlerts internally
 
+    //🔥 Firestore에서 특정 알림 문서 존재 여부 확인
+    checkIfAlertExists();
+
     // 매 시간마다 날씨 데이터 업데이트
     _timer = Timer.periodic(Duration(hours: 1), (timer) {
       _fetchWeatherData();
     });
   }
+
+  Future<void> checkIfAlertExists() async {
+  const alertId = 'your_alert_id_here'; // 실제 Firestore 문서 ID로 교체
+
+  try {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('alerts') // 컬렉션 이름이 맞는지 확인
+        .doc(alertId)
+        .get();
+
+    if (snapshot.exists) {
+      print("🔥 문서 존재함!");
+      final alert = FirestoreAlert.fromDoc(snapshot);
+      print("제목: ${alert.title}");
+
+      // 필요하면 상태 저장
+      setState(() {
+        latestAlerts = [alert]; // 예시로 리스트에 담음
+      });
+    } else {
+      print("❌ 문서 없음");
+    }
+  } catch (e) {
+    print("🚨 알림 문서 확인 중 오류 발생: $e");
+  }
+}
 
   @override
   void dispose() {

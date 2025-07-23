@@ -76,7 +76,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                 ),
               ),
@@ -112,7 +114,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                 ),
               ),
@@ -137,7 +141,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                 ),
               ),

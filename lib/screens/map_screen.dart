@@ -3,13 +3,16 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
+import 'dart:async';
 import 'dart:convert';
+import '../services/location_service.dart';
 
 
 //친구 위치를 뜨게 수정
 //상단에서 친구 보기 버튼을 누르면 대피소 마커가 사라지고, 친구의 위치가 뜨게 설정
-//
+
 
 class ShelterMapScreen extends StatefulWidget {
   const ShelterMapScreen({super.key});
@@ -25,7 +28,12 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
   bool _isLoading = true;
 
   Set<Marker> _friendMarkers = {};
-  Set<Marker> _ShelterMarkers = {}; //대피소 마커
+  Set<Marker> _shelterMarkers = {}; //대피소 마커
+  bool _showFriends = false; // 친구 위치 표시 여부
+  StreamSubscription<QuerySnapshot>? _friendLocationsSubscription;
+  final LocationService _locationService = LocationService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   //드롭다운 대피소 유형 목록과 선택값
   final Map<String, String> shelterTypes = {
@@ -41,6 +49,63 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
   void initState() {
     super.initState();
     _fetchCurrentLocation();
+    _setupFriendLocations();
+  }
+
+  @override
+  void dispose() {
+    _friendLocationsSubscription?.cancel();
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  // 친구 위치 업데이트 구독 설정
+  void _setupFriendLocations() {
+    _friendLocationsSubscription = _firestore
+        .collection('user_locations')
+        .where('timestamp', isGreaterThan: DateTime.now().subtract(const Duration(hours: 1)))
+        .snapshots()
+        .listen((snapshot) {
+          _updateFriendMarkers(snapshot.docs);
+        });
+  }
+
+  // 친구 마커 업데이트
+  void _updateFriendMarkers(List<QueryDocumentSnapshot> docs) async {
+    final currentUser = _auth.currentUser;
+    if (currentUser == null) return;
+
+    final friendMarkers = <Marker>{};
+    
+    for (var doc in docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      final userId = data['userId'] as String?;
+      final position = data['position'] as GeoPoint?;
+      
+      // 현재 사용자 제외
+      if (userId == null || position == null || userId == currentUser.uid) continue;
+      
+      // 사용자 정보 가져오기
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final userName = userDoc.data()?['name'] as String? ?? '알 수 없음';
+      final updatedAt = data['timestamp'] as Timestamp?;
+      
+      friendMarkers.add(Marker(
+        markerId: MarkerId('friend_$userId'),
+        position: LatLng(position.latitude, position.longitude),
+        infoWindow: InfoWindow(
+          title: userName,
+          snippet: updatedAt != null ? '업데이트: ${updatedAt.toDate().toLocal()}' : null,
+        ),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRose),
+      ));
+    }
+
+    if (mounted) {
+      setState(() {
+        _friendMarkers = friendMarkers;
+      });
+    }
   }
 
   //지도에 대피소 api에서 받아온 정보를 띄우는 흐름
@@ -50,7 +115,61 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
   //4.지도에 표시할 마커 set해서 저장(_shelterMarkers= ..)
   //5.build()에서 지도에 마커 표시(GoogleMap(markers:allMarkers)안에 포함됨)
 
-  //현재 위치 기반 대피소 데이터 가져오기
+  // 현재 위치 기반 대피소 데이터 가져오기
+  Future<void> _fetchCurrentLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        setState(() {
+          _errorMessage = '위치 서비스가 비활성화되어 있습니다.';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          setState(() {
+            _errorMessage = '위치 권한이 거부되었습니다.';
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        setState(() {
+          _errorMessage = '위치 권한이 영구적으로 거부되었습니다.';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+
+      final latLng = LatLng(position.latitude, position.longitude);
+      final shelterMarkers = await fetchShelterMarkers(latLng, _selectedShelterCode);
+
+      if (mounted) {
+        setState(() {
+          _currentPosition = latLng;
+          _shelterMarkers = shelterMarkers.toSet();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = '위치를 불러오는 중 오류 발생: $e';
+        _currentPosition = const LatLng(37.5665, 126.9780);
+        _isLoading = false;
+      });
+    }
+  }
 
   //공공데이터 API 호출 함수
   Future<List<Marker>> fetchShelterMarkers(
@@ -180,117 +299,6 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
     }
   }
 
-  Future<void> _fetchCurrentLocation() async {
-    try {
-      // 위치 서비스가 활성화되어 있는지 확인
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        setState(() {
-          _errorMessage = '위치 서비스가 비활성화되어 있습니다. 설정에서 위치 서비스를 활성화해주세요.';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // 위치 권한 확인
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          setState(() {
-            _errorMessage = '위치 권한이 거부되었습니다. 설정에서 위치 권한을 허용해주세요.';
-            _isLoading = false;
-          });
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        setState(() {
-          _errorMessage = '위치 권한이 영구적으로 거부되었습니다. 설정에서 위치 권한을 허용해주세요.';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // 현재 위치 가져오기
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
-      );
-
-      //위도:36.3678739, 경도:127.3651192에 잘뜸
-      print('현재 위치: 위도=${position.latitude}, 경도=${position.longitude}');
-
-      //현재 위도와 경도를 latLng에 저장
-      final latLng = LatLng(position.latitude, position.longitude);
-
-      //현재위치 기반 대피소 마커 받기
-      final shelterMarkers = await fetchShelterMarkers(
-        latLng,
-        _selectedShelterCode,
-      );
-
-      //여기서 부터 제대로 안뜸 => 위치 불러오기 오류: NoSuchMethodError: The Method '[]' was called on null 오류 발생
-
-      //마커가 제대로 생성되었는지 확인
-      print('생성된 마커 수: ${_ShelterMarkers.length}');
-      for (var marker in _ShelterMarkers) {
-        print('마커 위치: ${marker.position}, 제목: ${marker.infoWindow.title}');
-      }
-
-      //상태 업데이트(내위치 + 대피소 마커)
-      setState(() {
-        _currentPosition = latLng;
-        _ShelterMarkers = shelterMarkers.toSet();
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('위치 불러오기 오류: $e');
-      setState(() {
-        _errorMessage = '위치를 불러오는 중 오류가 발생했습니다: ${e.toString()}';
-        _isLoading = false;
-        // 기본 위치 설정 (서울)
-        _currentPosition = const LatLng(37.5665, 126.9780);
-      });
-    }
-  }
-
-  Future<void> _loadFriendLocations() async {
-    final snapshot = await FirebaseFirestore.instance.collection('users').get();
-
-    final markers = snapshot.docs
-        .map((doc) {
-          final data = doc.data();
-          final location = data['location'];
-          if (location is GeoPoint) {
-            final name = data['name'] ?? '익명';
-            final updatedAt = data['locationUpdatedAt'];
-
-            return Marker(
-              markerId: MarkerId(doc.id),
-              position: LatLng(location.latitude, location.longitude),
-              infoWindow: InfoWindow(
-                title: name,
-                snippet: updatedAt != null
-                    ? '업데이트: ${updatedAt.toDate().toLocal()}'
-                    : null,
-              ),
-              icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueAzure,
-              ),
-            );
-          }
-          return null;
-        })
-        .whereType<Marker>()
-        .toSet();
-
-    setState(() {
-      _friendMarkers = markers;
-    });
-  }
-
   //int _selectedIndex = 0;
   /*
   void _onItemTapped(int index) {
@@ -306,6 +314,9 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    // 현재 표시할 마커들 선택 (친구 또는 대피소)
+    final currentMarkers = _showFriends ? _friendMarkers : _shelterMarkers;
+
     // 내 위치 마커 생성
     final myLocationMarker = Marker(
       markerId: const MarkerId('my_location'),
@@ -313,11 +324,9 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
       infoWindow: const InfoWindow(title: '내 위치'),
       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
     );
-
-    // 친구 마커와 내 위치 마커 합치기
-    final allMarkers = Set<Marker>.from(_friendMarkers)
-      ..add(myLocationMarker)
-      ..addAll(_ShelterMarkers); //대피소 마커 추가
+    
+    // 선택된 마커와 내 위치 마커 합치기
+    final allMarkers = Set<Marker>.from(currentMarkers)..add(myLocationMarker);
 
     //드롭바 추가하기 위해 잠깐 주석처리
 
@@ -330,48 +339,70 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
       ),
       body: Column(
         children: [
-          // ✅ 드롭다운 위젯
+          // 상단 컨트롤 바
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: DropdownButton<String>(
-              value: _selectedShelterCode,
-              isExpanded: true,
-              items: shelterTypes.entries.map((entry) {
-                return DropdownMenuItem<String>(
-                  value: entry.value,
-                  child: Text(entry.key),
-                );
-              }).toList(),
-              onChanged: (value) async {
-                setState(() {
-                  _selectedShelterCode = value ?? '';
-                  _isLoading = true;
-                });
+            child: Row(
+              children: [
+                // 친구/대피소 토글 버튼
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _showFriends = !_showFriends;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _showFriends ? Colors.blue[100] : null,
+                  ),
+                  child: Text(_showFriends ? '대피소 보기' : '친구 위치 보기'),
+                ),
+                const SizedBox(width: 10),
+                // 대피소 유형 드롭다운 (대피소 모드일 때만 표시)
+                if (!_showFriends) Expanded(
+                  child: DropdownButton<String>(
+                    value: _selectedShelterCode,
+                    isExpanded: true,
+                    items: shelterTypes.entries.map((entry) {
+                      return DropdownMenuItem<String>(
+                        value: entry.value,
+                        child: Text(entry.key),
+                      );
+                    }).toList(),
+                    onChanged: (value) async {
+                      setState(() {
+                        _selectedShelterCode = value ?? '';
+                        _isLoading = true;
+                      });
 
-                // 현재 위치가 있을 때만 대피소 마커 업데이트
-                if (_currentPosition != null) {
-                  final markers = await fetchShelterMarkers(
-                    _currentPosition!,
-                    _selectedShelterCode,
-                  );
-                  setState(() {
-                    _ShelterMarkers = markers.toSet();
-                    _isLoading = false;
-                  });
-                } else {
-                  setState(() {
-                    _isLoading = false;
-                  });
-                }
-              },
+                      // 현재 위치가 있을 때만 대피소 마커 업데이트
+                      if (_currentPosition != null) {
+                        final markers = await fetchShelterMarkers(
+                          _currentPosition!,
+                          _selectedShelterCode,
+                        );
+                        if (mounted) {
+                          setState(() {
+                            _shelterMarkers = markers.toSet();
+                            _isLoading = false;
+                          });
+                        }
+                      } else {
+                        if (mounted) {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
           // ✅ 지도
           Expanded(
             child: GoogleMap(
-              onMapCreated: (controller) {
-                _mapController = controller;
-              },
+              onMapCreated: (controller) => _mapController = controller,
               initialCameraPosition: CameraPosition(
                 target: _currentPosition!,
                 zoom: 14,
@@ -379,6 +410,7 @@ class _ShelterMapScreenState extends State<ShelterMapScreen> {
               markers: allMarkers,
               myLocationEnabled: true,
               myLocationButtonEnabled: true,
+              zoomControlsEnabled: false,
             ),
           ),
         ],
