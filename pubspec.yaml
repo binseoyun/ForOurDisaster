@@ -47,6 +47,7 @@ dependencies:
   http: ^1.2.1
   geolocator: ^14.0.2
   geocoding: ^2.1.1
+  firebase_analytics: ^11.4.2
   
   
   # The following adds the Cupertino Icons font to your application.
@@ -71,6 +72,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  uses-material-design: true
   assets:
     - lib/assets/sun.png
     - lib/assets/moon.png
@@ -88,12 +90,19 @@ flutter:
     - lib/assets/snow-night.png
     - lib/assets/wind.png
     - lib/assets/cloud.png
+    - assets/icon/app_icon6.png
     - .env
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon6.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon/app_icon6.png"
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
-  uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -6,12 +6,15 @@ import 'firebase_options.dart';
 import 'screens/splash_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/alarm_screen.dart';
 import 'screens/editprofile_screen.dart';
 import 'screens/navigation_wrapper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -24,7 +27,31 @@ Future<void> initializeLocalNotifications() async {
     android: initializationSettingsAndroid,
   );
 
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: (NotificationResponse response) {
+      if (response.payload != null) {
+        final payload = response.payload!;
+        print("🔔 알림 클릭됨! payload: $payload");
+        // 예: Navigator를 통해 알림 화면으로 이동
+        navigatorKey.currentState?.pushNamed('/alarm');
+      }
+    },
+  );
+
+  // Android 8.0 이상에서 알림 채널 생성
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'high_importance_channel', // AndroidManifest.xml과 동일한 채널 ID
+    'High Importance Notifications', // 채널 이름 (사용자에게 보임)
+    description: 'This channel is used for important notifications.',
+    importance: Importance.high,
+  );
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.createNotificationChannel(channel);
 }
 
 //
@@ -102,9 +129,9 @@ void main() async {
 Future<void> showLocalNotification(String title, String body) async {
   const AndroidNotificationDetails androidPlatformChannelSpecifics =
       AndroidNotificationDetails(
-        'default_channel_id',
-        'Default',
-        channelDescription: '기본 채널',
+        'high_importance_channel',
+        'High Importance Notifications',
+        channelDescription: '이 채널은 중요한 알림용입니다.',
         importance: Importance.max,
         priority: Priority.high,
         showWhen: true,
@@ -196,7 +223,7 @@ void setupFCMListeners(BuildContext context) {
           'shownInUI': shownInUI,
           'region': region, // Save the region with the alert
         });
-  
+
     if (shownInUI) {
       await showLocalNotification(title, body);
     }
@@ -209,6 +236,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'ForOurDisaster',
       theme: ThemeData(
         fontFamily: 'Pretendard',
@@ -246,6 +274,7 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const SignupScreen(),
         '/home': (context) => const NavigationWrapper(),
         '/editprofile': (context) => const ProfileScreen(),
+        '/alarm': (context) => const AlarmScreen(),
       },
     );
   }
