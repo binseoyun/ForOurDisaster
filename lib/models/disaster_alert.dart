@@ -26,7 +26,9 @@ class DisasterAlert {
       final dt = DateTime.parse(crtDt); // crtDt is already in ISO format
       return DateFormat('h:mm a').format(dt);
     } catch (e) {
-      print('Error formatting time for display: $crtDt - $e'); // Log specific error
+      print(
+        'Error formatting time for display: $crtDt - $e',
+      ); // Log specific error
       return '';
     }
   }

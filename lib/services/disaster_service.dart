@@ -110,22 +110,32 @@ class DisasterService {
   }) async {
     final List<Map<String, dynamic>> rawData = await _fetchDisasterData(
       numOfRows: 1000,
-      region: region,
+      region: null, // Always fetch all regions and filter client-side
       crtDt: null,
       includeDateFilter: false,
     );
 
-    //최신순
-    final List<DisasterAlert> alerts = rawData
+    // Convert to DisasterAlert objects
+    List<DisasterAlert> alerts = rawData
         .map((json) => DisasterAlert.fromJson(json))
         .toList();
 
+    // Filter by region if specified
+    if (region != null && region.isNotEmpty) {
+      alerts = alerts.where((alert) {
+        // Check if the alert's region contains the selected region name
+        return alert.rcptnRgnNm.contains(region);
+      }).toList();
+    }
+
+    // Sort by date (newest first)
     alerts.sort((a, b) {
       try {
         final dateA = DateTime.parse(a.crtDt);
         final dateB = DateTime.parse(b.crtDt);
         return dateB.compareTo(dateA);
       } catch (e) {
+        print('Error sorting alerts: $e');
         return 0;
       }
     });

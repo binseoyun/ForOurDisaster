@@ -18,34 +18,13 @@ class CallScreen extends StatefulWidget {
 class _CallScreenState extends State<CallScreen> {
   String myEmergencyNumber = '010-0000-1111'; //초기 연락처
   final List<Map<String, String>> addedContacts = []; //사용자가 추가한 이름과 연락처 저장
-  String _userName = ''; // 사용자 이름을 저장할 변수
+  bool _disasterAlertEnabled = true; //재난문자 알림 on/off
 
   @override
   void initState() {
     super.initState();
     loadContacts(); // 앱 시작 시 로컬 데이터 불러오기
-    _loadUserName(); // 사용자 이름 불러오기
-  }
-
-  // Firebase에서 사용자 이름 불러오기
-  Future<void> _loadUserName() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      try {
-        final doc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-            
-        if (doc.exists) {
-          setState(() {
-            _userName = doc.data()?['name'] ?? '사용자';
-          });
-        }
-      } catch (e) {
-        debugPrint('사용자 이름을 불러오는 중 오류 발생: $e');
-      }
-    }
+    loadDisasterAlertSettings();
   }
 
   void _call(String number) async {
@@ -56,88 +35,36 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   Future<void> saveContacts() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .update({
-            'emergency_contacts': addedContacts,
-            'last_updated': FieldValue.serverTimestamp(),
-          });
-    } catch (e) {
-      debugPrint('Error saving emergency contacts: $e');
-      // Fallback to local storage if Firestore fails
-      final prefs = await SharedPreferences.getInstance();
-      final encodedList = addedContacts
-          .map((contact) => jsonEncode(contact))
-          .toList();
-      await prefs.setStringList('emergency_contacts_${user.uid}', encodedList);
-    }
+    final prefs = await SharedPreferences.getInstance(); //local에 저장되게
+    final encodedList = addedContacts
+        .map((contact) => jsonEncode(contact))
+        .toList();
+    await prefs.setStringList('emergency_contacts', encodedList);
   }
 
   Future<void> loadContacts() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-
-      if (doc.exists && doc.data()?['emergency_contacts'] != null) {
-        final contacts = List<Map<String, String>>.from(
-          doc.data()!['emergency_contacts'].map<Map<String, dynamic>>(
-            (item) => Map<String, String>.from(item as Map),
-          ),
+    final prefs = await SharedPreferences.getInstance();
+    final List<String>? encodedList = prefs.getStringList('emergency_contacts');
+    if (encodedList != null) {
+      setState(() {
+        addedContacts.clear();
+        addedContacts.addAll(
+          encodedList.map((item) => Map<String, String>.from(jsonDecode(item))),
         );
-
-        setState(() {
-          addedContacts.clear();
-          addedContacts.addAll(contacts);
-        });
-      } else {
-        // Fallback to local storage if no Firestore data exists
-        final prefs = await SharedPreferences.getInstance();
-        final List<String>? encodedList = prefs.getStringList(
-          'emergency_contacts_${user.uid}',
-        );
-        if (encodedList != null) {
-          setState(() {
-            addedContacts.clear();
-            addedContacts.addAll(
-              encodedList.map(
-                (item) => Map<String, String>.from(jsonDecode(item)),
-              ),
-            );
-            // Save to Firestore for future use
-            if (addedContacts.isNotEmpty) {
-              saveContacts();
-            }
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint('Error loading emergency contacts: $e');
-      // Fallback to local storage if Firestore fails
-      final prefs = await SharedPreferences.getInstance();
-      final List<String>? encodedList = prefs.getStringList(
-        'emergency_contacts_${user.uid}',
-      );
-      if (encodedList != null) {
-        setState(() {
-          addedContacts.clear();
-          addedContacts.addAll(
-            encodedList.map(
-              (item) => Map<String, String>.from(jsonDecode(item)),
-            ),
-          );
-        });
-      }
+      });
     }
+  }
+
+  Future<void> loadDisasterAlertSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _disasterAlertEnabled = prefs.getBool('disaster_alert_enabled') ?? true;
+    });
+  }
+
+  Future<void> saveDisasterAlertSetting() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('disaster_alert_enabled', _disasterAlertEnabled);
   }
 
   void _showAddContactDialog() {
@@ -154,39 +81,27 @@ class _CallScreenState extends State<CallScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         title: const Text("긴급 연락처 추가"),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  hintText: "이름 입력",
-                  contentPadding: EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: numberController,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  hintText: "전화번호 입력",
-                  contentPadding: EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  hintText: "이메일 입력",
-                  contentPadding: EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ],
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(hintText: "이름 입력"),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: numberController,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(hintText: "전화번호 입력"),
+            ),
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(hintText: "이메일 입력"),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -216,8 +131,6 @@ class _CallScreenState extends State<CallScreen> {
                   print("로그인이 안 된 상태입니다.");
                   return;
                 }
-                final freshToken = await user.getIdToken(true);
-                print("Cloud Function 호출 직전 토큰: $freshToken");
 
                 try {
                   await FirebaseFirestore.instance
@@ -255,70 +168,21 @@ class _CallScreenState extends State<CallScreen> {
                 );
 
                 if (agreed == true) {
-                  // ✅ 로그인 상태 체크
-                  final user = FirebaseAuth.instance.currentUser;
-                  if (user == null) {
-                    // 로그인 필요 안내
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("로그인 후 이용해 주세요.")),
-                    );
-                    return;
-                  }
+                  // TODO: 이 이메일을 Firestore에서 사용자 찾고 → FCM 푸시 알림 전송
+                  print("🔔 위치 공유 요청 푸시 알림을 보냅니다.");
 
-                  // 🔎 토큰 확인 및 강제 갱신
-                  final idToken = await user.getIdToken();
-                  print("현재 토큰: $idToken");
-                  final freshToken = await user.getIdToken(true);
-                  print("갱신된 토큰: $freshToken");
-
-                  // 위치 공유 요청 푸시 알림을 보냅니다.
                   try {
-                    // 현재 사용자 가져오기
-                    final user = FirebaseAuth.instance.currentUser;
-                    if (user == null) {
-                      print('❌ 사용자가 로그인되어 있지 않습니다.');
-                      return;
-                    }
-
-                    // ID 토큰 가져오기
-                    final idToken = await user.getIdToken();
-
-                    // 명시적으로 리전을 지정하여 Firebase Functions 인스턴스 생성
-                    final functions = FirebaseFunctions.instanceFor(
-                      region: 'asia-northeast3',
-                    );
-
-                    // Functions 호출 옵션 설정
-                    final callable = functions.httpsCallable(
-                      'sendLocationRequest',
-                      options: HttpsCallableOptions(
-                        timeout: const Duration(seconds: 30),
-                      ),
-                    );
-
-                    print(
-                      "🔹 함수 호출 시도: targetEmail=$email, senderName=$name, number=$number",
-                    );
-
-                    // 인증 헤더와 함께 함수 호출
+                    final HttpsCallable callable = FirebaseFunctions.instance
+                        .httpsCallable('sendLocationRequest');
+                    print(FirebaseAuth.instance.currentUser?.uid);
                     final result = await callable.call(<String, dynamic>{
-                      'targetEmail': email,
-                      'senderName': name,
-                      'number': number,
-                      'auth': {'uid': user.uid, 'token': idToken},
+                      'targetEmail': email, // 사용자가 입력한 친구 이메일
+                      'senderName': name, // 이름도 함께 전달해도 좋음
+                      'number': number, // 선택사항
                     });
-                    print("Cloud Function 호출 결과: ${result.data}");
-                  } catch (e, stackTrace) {
-                    print('⚠️ Cloud Function 호출 실패');
-                    print('에러 타입: ${e.runtimeType}');
-                    print('에러 메시지: $e');
-                    print('스택 트레이스: $stackTrace');
-
-                    if (e is FirebaseFunctionsException) {
-                      print('에러 코드: ${e.code}');
-                      print('에러 상세: ${e.details}');
-                      print('스택: ${e.stackTrace}');
-                    }
+                    print('📨 푸시 알림 결과: ${result.data}');
+                  } catch (e) {
+                    print('Cloud Function 호출 실패:$e');
                   }
                 } else {
                   print("🙅 위치 공유 요청은 하지 않았습니다.");
@@ -430,18 +294,6 @@ class _CallScreenState extends State<CallScreen> {
     );
   }
 
-  // 알림 설정 가져오기
-  Future<bool> _getNotificationPreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('disaster_alert_enabled') ?? true;
-  }
-
-  // 알림 설정 저장
-  Future<void> _saveNotificationPreference(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('disaster_alert_enabled', value);
-  }
-
   @override
   Widget build(BuildContext context) {
     //build() UI 구성
@@ -450,26 +302,11 @@ class _CallScreenState extends State<CallScreen> {
       appBar: AppBar(
         //화면 상단 바
         titleSpacing: 16,
-        title: Text(
-          _userName.isNotEmpty ? _userName : '사용자',
-          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        title: const Text(
+          '빈서윤',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
-          // 알림 설정 토글 스위치
-          FutureBuilder<bool>(
-            future: _getNotificationPreference(),
-            builder: (context, snapshot) {
-              final isEnabled = snapshot.data ?? true;
-              return Switch(
-                value: isEnabled,
-                onChanged: (value) async {
-                  await _saveNotificationPreference(value);
-                  setState(() {});
-                },
-                activeColor: Colors.blue,
-              );
-            },
-          ),
           //설정 아이콘 => 누르면 ProfileScreen으로 이동
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.black),
@@ -547,7 +384,27 @@ class _CallScreenState extends State<CallScreen> {
                 },
               ),
             ),
-
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    '재난 문자 푸시 알림' ,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Switch(
+                  value: _disasterAlertEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _disasterAlertEnabled = value;
+                    });
+                    saveDisasterAlertSetting();
+                  },
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 32), //충분한 간격 추가
             // 🔽 통합 안내문
             const Text(

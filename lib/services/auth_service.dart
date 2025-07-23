@@ -48,6 +48,27 @@ class AuthService {
     return credential;
   }
 
+  // 사용자 프로필이 완료되었는지 확인
+  Future<bool> isProfileComplete() async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+    
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (!doc.exists) return false;
+      
+      final data = doc.data();
+      if (data == null) return false;
+      
+      // 이름이 비어있지 않으면 프로필이 완료된 것으로 간주
+      final name = data['name']?.toString().trim() ?? '';
+      return name.isNotEmpty;
+    } catch (e) {
+      debugPrint('Error checking profile completion: $e');
+      return false;
+    }
+  }
+
   Future<void> signOut() async {
     await _auth.signOut();
   }
